@@ -99,7 +99,7 @@ ThreadId should be added, whenever available. This closes the Thread.
 | description | General error, which should abort and reset the current workflow/protocol |
 | encryption | any |
 
-payload:
+content:
 
 ```typescript
 interface {
@@ -135,8 +135,9 @@ Server: MultyPartyThreadId = "123;890"
 | message_type | `SEND_DID` |
 |encryption | false |
 
-payload: `string`
-example_payload: `did:kilt:1235`
+content: `string`
+
+example_content: `did:kilt:1235`
 
 2. **User Agent Requests Authentication**
 
@@ -146,7 +147,7 @@ example_payload: `did:kilt:1235`
 |message_type | `REQUEST_AUTHENTICATION` |
 |encryption| anonymous|
 
-payload
+content
 
 ```typescript
 interface {
@@ -157,7 +158,7 @@ interface {
 }   
 ```
 
-example_payload:
+example_content:
 
 ```json
 {
@@ -179,7 +180,8 @@ Message includes a counter-challenge for the user agent to sign.
 | direction | `Browser -> Extension` |
 | message_type | `SUBMIT_AUTHENTICATION` |
 | encryption | authenticated (to temporary key) |
-payload:
+
+content:
 
 ```typescript
 interface { 
@@ -188,7 +190,8 @@ interface {
 }
 ```
 
-example
+example_content
+
 ```json
 { 
     "credential": {},
@@ -209,7 +212,7 @@ example
 | direction | `Browser -> Extension` |
 | message_type | `SUBMIT_TERMS`|
 
-payload:
+content:
 
 ```typescript
 interface {
@@ -233,7 +236,7 @@ interface {
 
 > For now we leave `prerequisites` out and see how applications use the verification flow and watch out for usefulness. // @tjwelde 
 
-example payload:
+example_content:
 
 ```json
 {
@@ -257,7 +260,7 @@ Only send with active consent of the user.
 | message_type | `REQUEST_CREDENTIAL`|
 | encryption | authenticated |
 
-payload:`IRequestForAttestation`
+content: `IRequestForAttestation`
 
 ```typescript
 interface IRequestForAttestation {
@@ -284,7 +287,7 @@ One or more instances of the [Verification Workflow](#Verification-Workflow) may
 | message_type | `ATTESTED_CREDENTIAL`|
 | encryption | authenticated |
 
-payload: `IAttestedClaim`
+content: `IAttestedClaim`
 
 ```typescript
 interface IAttestedClaim {
@@ -320,7 +323,7 @@ Repeat for multiple required credentials.
 | message_type | `REQUEST_CREDENTIAL` |
 | encryption | authenticated |
 
-payload:
+content:
 
 ```typescript
 interface {
@@ -334,7 +337,7 @@ interface {
 }   
 ```
 
-example payload:
+example_content:
 
 ```json
 {
@@ -363,7 +366,8 @@ This closes the thread.
 | message_type | `SUBMIT_CREDENTIAL`|
 | encryption | authenticated |
 
-payload: 
+content: 
+
 ```typescript
 interface {
     credential: IAttestedClaim
