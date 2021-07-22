@@ -9,12 +9,12 @@ window.kilt = window.kilt || {}
 The dapp can get all the available extensions via iterating over the `window.kilt` object.
 
 ```typescript
-function getWindowExtensions (originName: string) {
+function getWindowExtensions (dAppName: string) {
   return Promise.all(
-    Object.entries(window.kilt).map(([name, { enable, version, specVersion }]) =>
+    Object.entries(window.kilt).map(([name, { startSession, version, specVersion }]) =>
       Promise.all([
         Promise.resolve({ name, version, specVersion }),
-        enable(originName).catch((error: Error): void => {
+        startSession(dAppName).catch((error: Error): void => {
           console.error(`Error initializing ${name}: ${error.message}`);
         })
       ])
@@ -26,54 +26,46 @@ function getWindowExtensions (originName: string) {
 ## Extension (Provider) side
 
 ```typescript
-interface Injected {
-  specVersion: '0.1.0'
-  startSession: () => Promise<PubSubSession>
+interface GlobalKilt {
+    [extensionName: string]: InjectedWindowProvider
 }
-```
 
-```typescript
+interface InjectedWindowProvider {
+    startSession: (dAppName: string) => Promise<PubSubSession>
+    version: string
+    specVersion: '0.1.0'
+}
+
 interface PubSubSession {
-    listen: (cb: (message: Message) => Promise<void>) => Promise<void>
+    listen: (callback: (message: Message) => Promise<void>) => Promise<void>
     close: () => Promise<void>
     send: (message: Message) => Promise<void>
 }
 ```
 
-Messages should be queued, before someone calls `listen`.
+Messages should be queued until someone calls `listen`.
 
 If the browser, or the extension can't handle the received message, they can reject the Promise.
 The Promise should be resolved, when the server has processed the message.
 
-```typescript
-interface InjectedWindowProvider {
-  enable: (origin: string) => Promise<Injected>;
-  version: string;
-  specVersion: string
-}
-```
-
-How to inject your extension
+An example of how to inject your extension:
 
 ```typescript
-interface GlobalKilt {
-  [key: string]: InjectedWindowProvider
-}
-
 window.kilt as GlobalKilt = window.kilt || {};
 
-window.kilt[name] = {
-    enable: (origin: string) => {
+window.kilt[extensionName] = {
+    startSession: async (dAppName: string) => {
         // Extension enables itself
+        return { /*...*/} as PubSubSession;
     },
     version,
-    specVersion
+    specVersion: '0.1.0'
 };
 ```
 
-origin is just a name, the dapp can use.
+`dAppName` is just a name the dapp can use.
 
-enable function give the extension the possibility to intialize itself (maybe ask the user for permission to communicate with the page) and the URL of the page (which can be directly accessed by the extension) can be checked against an internal whitelist/blacklist.
+`startSession` function give the extension the possibility to intialize itself (maybe ask the user for permission to communicate with the page) and the URL of the page (which can be directly accessed by the extension) can be checked against an internal whitelist/blacklist.
 
 The dapp should list all available extensions it can work with.
 
@@ -264,14 +256,14 @@ content: `IRequestForAttestation`
 
 ```typescript
 interface IRequestForAttestation {
-  claim: IClaim
-  claimNonceMap: Record<Hash, string>
-  claimHashes: Hash[]
-  claimerSignature: string
-  delegationId: IDelegationBaseNode['id'] | null
-  legitimations: IAttestedClaim[]
-  rootHash: Hash
-  threadId: ThreadId
+    claim: IClaim
+    claimNonceMap: Record<Hash, string>
+    claimHashes: Hash[]
+    claimerSignature: string
+    delegationId: IDelegationBaseNode['id'] | null
+    legitimations: IAttestedClaim[]
+    rootHash: Hash
+    threadId: ThreadId
 }
 ```
 
