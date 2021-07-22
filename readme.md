@@ -1,29 +1,21 @@
 # KILT Credential API (Draft Spec version 1.0)
 
-## DApp side
+## Definitions
 
-```javascript
-window.kilt = window.kilt || {}
-```
+### Extension
 
-The dapp can get all the available extensions via iterating over the `window.kilt` object.
+A browser extension that stores and uses the identities and credentials of the user. 
+When the user visits a webpage, the extension injects its API in this webpage.
 
-```typescript
-function getWindowExtensions (dAppName: string) {
-  return Promise.all(
-    Object.entries(window.kilt).map(([name, { startSession, version, specVersion }]) =>
-      Promise.all([
-        Promise.resolve({ name, version, specVersion }),
-        startSession(dAppName).catch((error: Error): void => {
-          console.error(`Error initializing ${name}: ${error.message}`);
-        })
-      ])
-    )
-  );
-}
-```
+### dApp
 
-## Extension (Provider) side
+Decentralized application. Examples of dApp in this specification are Attester and Verifier.
+It is a website that can interact with the extension via the API it exposes.
+
+
+## Setting up the communication session
+
+### Types
 
 ```typescript
 interface GlobalKilt {
@@ -43,33 +35,65 @@ interface PubSubSession {
 }
 ```
 
-Messages should be queued until someone calls `listen`.
 
-If the browser, or the extension can't handle the received message, they can reject the Promise.
-The Promise should be resolved, when the server has processed the message.
+### DApp consumes the API exposed by extension 
 
-An example of how to inject your extension:
+The dApp can get all the available extensions via iterating over the `window.kilt` object.
+
+```typescript
+function getWindowExtensions(): InjectedWindowProvider[] {
+    return Object.entries(window.kilt || {}).map(([name, {startSession, version, specVersion}]) => ({
+        name,
+        version,
+        specVersion,
+        startSession,
+    }));
+}
+```
+
+The dApp should list all available extensions it can work with. 
+The user selects the extension on this list, and the communication starts from there.
+
+```typescript
+async function startExtensionSession(
+    extension: InjectedWindowProvider,
+    dAppName: string,
+): Promise<PubSubSession> {
+    try {
+        return await extension.startSession(dAppName);
+    } catch (error) {
+        console.error(`Error initializing ${extension.name}: ${error.message}`);
+        throw error;
+    }
+}
+```
+
+
+### Extension injects its API into a webpage
 
 ```typescript
 window.kilt as GlobalKilt = window.kilt || {};
 
 window.kilt[extensionName] = {
-    startSession: async (dAppName: string) => {
+    startSession: async (dAppName: string): Promise<PubSubSession> => {
         // Extension enables itself
-        return { /*...*/} as PubSubSession;
+        return { /*...*/ };
     },
     version,
     specVersion: '0.1.0'
-};
+} as InjectedWindowProvider;
 ```
 
-`dAppName` is just a name the dapp can use.
+`startSession` function gives the extension the possibility to initialize itself (maybe ask the user for permission to communicate with the page) and the URL of the page (which can be directly accessed by the extension) can be checked against an internal whitelist/blacklist.
 
-`startSession` function give the extension the possibility to intialize itself (maybe ask the user for permission to communicate with the page) and the URL of the page (which can be directly accessed by the extension) can be checked against an internal whitelist/blacklist.
 
-The dapp should list all available extensions it can work with.
+### Processing the messages
 
-The user selects the extension on this list and the communication starts from there.
+Messages should be queued until the dApp calls `listen`.
+
+The Promise should be resolved after the dApp or the extension have finished processing the message.
+If they can't handle the received message, they can reject the Promise.
+
 
 ## Messaging Protocol
 
