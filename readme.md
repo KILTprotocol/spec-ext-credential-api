@@ -11,7 +11,7 @@ The dapp can get all the available extensions via iterating over the `window.kil
 ```typescript
 function getWindowExtensions (originName: string) {
   return Promise.all(
-    Object.entries(window.kilt).map(([name, { enable, version, specVersion }])) =>
+    Object.entries(window.kilt).map(([name, { enable, version, specVersion }]) =>
       Promise.all([
         Promise.resolve({ name, version, specVersion }),
         enable(originName).catch((error: Error): void => {
@@ -34,9 +34,9 @@ interface Injected {
 
 ```typescript
 interface PubSubSession {
-    listen: (cb: (Message) => Promise<void>)
+    listen: (cb: (message: Message) => Promise<void>) => Promise<void>
     close: () => Promise<void>
-    send: (Message) => Promise<void>
+    send: (message: Message) => Promise<void>
 }
 ```
 
@@ -60,7 +60,7 @@ interface GlobalKilt {
   [key: string]: InjectedWindowProvider
 }
 
-window.kilt: GlobalKilt = window.kilt || {};
+window.kilt as GlobalKilt = window.kilt || {};
 
 window.kilt[name] = {
     enable: (origin: string) => {
@@ -117,7 +117,7 @@ A thread id is agreed on by both parties by one of them sending the first half a
 Allowed IDs are base64 encoded strings.
 
 ```typescript
-type ThreadId: SinglePartyThreadId | MultyPartyThreadId
+type ThreadId = SinglePartyThreadId | MultyPartyThreadId
 
 Extension: SinglePartyThreadId = "123"
 Server: MultyPartyThreadId = "123;890"
@@ -161,12 +161,12 @@ example_payload:
 
 ```json
 {
-    ctype: "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-    trusted_attesters: [
-        did:kilt:123abcd
+    "ctype": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
+    "trusted_attesters": [
+        "did:kilt:123abcd"
     ],
-    temporary_encryption_key: '0x342352523423abce',
-    thread_id: 'jh2g524g5kuy43g235'
+    "temporary_encryption_key": "0x342352523423abce",
+    "thread_id": "jh2g524g5kuy43g235"
 }
 ```
 
@@ -189,10 +189,10 @@ interface {
 ```
 
 example
-```typescript
-interface { 
-    credential: { ... }
-    thread_id: "jh2g524g5kuy43g235;2342342jh"
+```json
+{ 
+    "credential": {},
+    "thread_id": "jh2g524g5kuy43g235;2342342jh"
 }
 ```
 
@@ -235,15 +235,15 @@ interface {
 
 example payload:
 
-```typescript
+```json
 {
-    ctype: "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-    claim: {
-        grade: 12
-        passed: true
+    "ctype": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
+    "claim": {
+        "grade": 12,
+        "passed": true
     },
-    delegationId: "0x123",
-    thread_id: "jh2g524g5kuy43g235;2342342jh"
+    "delegationId": "0x123",
+    "thread_id": "jh2g524g5kuy43g235;2342342jh"
 }
 ```
 
@@ -338,17 +338,17 @@ example payload:
 
 ```json
 {
-    ctypes: {
+    "ctypes": {
         "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b": {
-            trusted_attesters: [
+            "trusted_attesters": [
                 "did:kilt:123abcd"
             ],
-            required_attributes: [
+            "required_attributes": [
                 "name"
             ]
         }
     },
-    thread_id: "jh2g524g5kuy43g235;2342342jh"
+    "thread_id": "jh2g524g5kuy43g235;2342342jh"
 }
 ```
 
