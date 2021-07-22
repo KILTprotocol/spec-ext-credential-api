@@ -105,7 +105,7 @@ payload:
 interface {
     code: number
     reason: string
-    thread_id?: ThreadId
+    threadId?: ThreadId
 }
 ```
 
@@ -151,9 +151,9 @@ payload
 ```typescript
 interface {
     ctype: string,
-    trusted_attesters: string[],
-    temporary_encryption_key: string
-    thread_id: string
+    trustedAttesters: string[],
+    temporaryEncryptionKey: string
+    threadId: string
 }   
 ```
 
@@ -162,11 +162,11 @@ example_payload:
 ```json
 {
     "ctype": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-    "trusted_attesters": [
+    "trustedAttesters": [
         "did:kilt:123abcd"
     ],
-    "temporary_encryption_key": "0x342352523423abce",
-    "thread_id": "jh2g524g5kuy43g235"
+    "temporaryEncryptionKey": "0x342352523423abce",
+    "threadId": "jh2g524g5kuy43g235"
 }
 ```
 
@@ -184,7 +184,7 @@ payload:
 ```typescript
 interface { 
     credential: AttestedClaim
-    thread_id: ThreadId
+    threadId: ThreadId
 }
 ```
 
@@ -192,7 +192,7 @@ example
 ```json
 { 
     "credential": {},
-    "thread_id": "jh2g524g5kuy43g235;2342342jh"
+    "threadId": "jh2g524g5kuy43g235;2342342jh"
 }
 ```
 
@@ -220,10 +220,10 @@ interface {
     // quote?: IQuoteAttesterSigned
     //prerequisites?: {
     //    ctype: string
-    //    trusted_attesters: string[]
+    //    trustedAttesters: string[]
     //    required: boolean
     //}[]
-    thread_id: ThreadId
+    threadId: ThreadId
 }
 ```
 
@@ -243,7 +243,7 @@ example payload:
         "passed": true
     },
     "delegationId": "0x123",
-    "thread_id": "jh2g524g5kuy43g235;2342342jh"
+    "threadId": "jh2g524g5kuy43g235;2342342jh"
 }
 ```
 
@@ -268,7 +268,7 @@ interface IRequestForAttestation {
   delegationId: IDelegationBaseNode['id'] | null
   legitimations: IAttestedClaim[]
   rootHash: Hash
-  thread_id: ThreadId
+  threadId: ThreadId
 }
 ```
 
@@ -296,7 +296,7 @@ interface IAttestedClaim {
         delegationId: IDelegationBaseNode['id'] | null
         revoked: boolean
     }
-    thread_id: ThreadId
+    threadId: ThreadId
 }
 ```
 
@@ -326,11 +326,11 @@ payload:
 interface {
     ctypes: {
         [key: string]: {
-            trusted_attesters: string[]
-            required_attributes: string[]
+            trustedAttesters: string[]
+            requiredAttributes: string[]
         }
     }
-    thread_id: ThreadId
+    threadId: ThreadId
 }   
 ```
 
@@ -340,15 +340,15 @@ example payload:
 {
     "ctypes": {
         "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b": {
-            "trusted_attesters": [
+            "trustedAttesters": [
                 "did:kilt:123abcd"
             ],
-            "required_attributes": [
+            "requiredAttributes": [
                 "name"
             ]
         }
     },
-    "thread_id": "jh2g524g5kuy43g235;2342342jh"
+    "threadId": "jh2g524g5kuy43g235;2342342jh"
 }
 ```
 
@@ -367,6 +367,6 @@ payload:
 ```typescript
 interface {
     credential: IAttestedClaim
-    thread_id: ThreadId
+    threadId: ThreadId
 }
 ```
