@@ -2,16 +2,16 @@
 
 ## DApp side
 
-```javascript=
+```javascript
 window.kilt = window.kilt || {}
 ```
 
 The dapp can get all the available extensions via iterating over the `window.kilt` object.
 
-```javascript=
+```typescript
 function getWindowExtensions (originName: string) {
   return Promise.all(
-    Object.entries(window.kilt).map(([name, { enable, version, specVersion }])] =>
+    Object.entries(window.kilt).map(([name, { enable, version, specVersion }])) =>
       Promise.all([
         Promise.resolve({ name, version, specVersion }),
         enable(originName).catch((error: Error): void => {
@@ -25,14 +25,14 @@ function getWindowExtensions (originName: string) {
 
 ## Extension (Provider) side
 
-```typescript=
+```typescript
 interface Injected {
   specVersion: '0.1.0'
   startSession: () => Promise<PubSubSession>
 }
 ```
 
-```typescript=
+```typescript
 interface PubSubSession {
     listen: (cb: (Message) => Promise<void>)
     close: () => Promise<void>
@@ -41,10 +41,11 @@ interface PubSubSession {
 ```
 
 Messages should be queued, before someone calls `listen`.
+
 If the browser, or the extension can't handle the received message, they can reject the Promise.
 The Promise should be resolved, when the server has processed the message.
 
-```typescript=
+```typescript
 interface InjectedWindowProvider {
   enable: (origin: string) => Promise<Injected>;
   version: string;
@@ -54,7 +55,7 @@ interface InjectedWindowProvider {
 
 How to inject your extension
 
-```typescript=
+```typescript
 interface GlobalKilt {
   [key: string]: InjectedWindowProvider
 }
@@ -71,9 +72,11 @@ window.kilt[name] = {
 ```
 
 origin is just a name, the dapp can use.
+
 enable function give the extension the possibility to intialize itself (maybe ask the user for permission to communicate with the page) and the URL of the page (which can be directly accessed by the extension) can be checked against an internal whitelist/blacklist.
 
 The dapp should list all available extensions it can work with.
+
 The user selects the extension on this list and the communication starts from there.
 
 ## Messaging Protocol
@@ -98,7 +101,7 @@ ThreadId should be added, whenever available. This closes the Thread.
 
 payload:
 
-```typescript=
+```typescript
 interface {
     code: number
     reason: string
@@ -106,14 +109,14 @@ interface {
 }
 ```
 
-> Error codes will be provided at a later time. For now, when receiving an error, the user agent and connecting party should reset. [name=Timo Welde]
+> Error codes will be provided at a later time. For now, when receiving an error, the user agent and connecting party should reset. // @tjwelde
 
 #### ThreadId
 
 A thread id is agreed on by both parties by one of them sending the first half and the other one appending a second part after a `;`.
 Allowed IDs are base64 encoded strings.
 
-```typescript=
+```typescript
 type ThreadId: SinglePartyThreadId | MultyPartyThreadId
 
 Extension: SinglePartyThreadId = "123"
@@ -145,7 +148,7 @@ example_payload: `did:kilt:1235`
 
 payload
 
-```typescript=
+```typescript
 interface {
     ctype: string,
     trusted_attesters: string[],
@@ -156,7 +159,7 @@ interface {
 
 example_payload:
 
-```json=
+```json
 {
     ctype: "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
     trusted_attesters: [
@@ -178,7 +181,7 @@ Message includes a counter-challenge for the user agent to sign.
 | encryption | authenticated (to temporary key) |
 payload:
 
-```typescript=
+```typescript
 interface { 
     credential: AttestedClaim
     thread_id: ThreadId
@@ -186,14 +189,15 @@ interface {
 ```
 
 example
-```typescript=
+```typescript
 interface { 
     credential: { ... }
     thread_id: "jh2g524g5kuy43g235;2342342jh"
 }
 ```
 
-> signing the challenge is not strictly necessary bc the message is authenticated/signed [name=Raphael Flechtner]
+> signing the challenge is not strictly necessary bc the message is authenticated/signed // @rflechtner 
+
 > Might be very good to indicate that from this point on, the user agent (and the claimer) is 100% sure to be talking to a legit attester/verifier, so it is finally possible to reveal his DID (next step).
 
 ### Attestation Workflow
@@ -207,7 +211,7 @@ interface {
 
 payload:
 
-```typescript=
+```typescript
 interface {
     ctype: string
     claim: Partial<IClaim>
@@ -223,13 +227,15 @@ interface {
 }
 ```
 
-> The interface basically is the SubmitTerms message type, but I wasn't sure whether quotes and prerequisite claims are relevant for this use case. Prerequisite claims may better be handled via nested [Verification Workflows](#Verification-Workflow) after the user agent submitted the RequestForAttestation. [name=Raphael Flechtner]
-> `prerequisites` is just an information for the user, that there will be a verification flow happening after the `request for attestation`, where the attester asks for credentials of specific ctypes to authenticate the user. [name=Timo Welde]
-> For now we leave `prerequisites` out and see how applications use the verification flow and watch out for usefulness. [name=Timo Welde]
+> The interface basically is the SubmitTerms message type, but I wasn't sure whether quotes and prerequisite claims are relevant for this use case. Prerequisite claims may better be handled via nested [Verification Workflows](#Verification-Workflow) after the user agent submitted the RequestForAttestation. // @rflechtner 
+
+> `prerequisites` is just an information for the user, that there will be a verification flow happening after the `request for attestation`, where the attester asks for credentials of specific ctypes to authenticate the user. // @tjwelde 
+
+> For now we leave `prerequisites` out and see how applications use the verification flow and watch out for usefulness. // @tjwelde 
 
 example payload:
 
-```typescript=
+```typescript
 {
     ctype: "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
     claim: {
@@ -253,7 +259,7 @@ Only send with active consent of the user.
 
 payload:`IRequestForAttestation`
 
-```typescript=
+```typescript
 interface IRequestForAttestation {
   claim: IClaim
   claimNonceMap: Record<Hash, string>
@@ -280,7 +286,7 @@ One or more instances of the [Verification Workflow](#Verification-Workflow) may
 
 payload: `IAttestedClaim`
 
-```typescript=
+```typescript
 interface IAttestedClaim {
     request: IRequestForAttestation
     attestation: {
@@ -316,7 +322,7 @@ Repeat for multiple required credentials.
 
 payload:
 
-```typescript=
+```typescript
 interface {
     ctypes: {
         [key: string]: {
@@ -330,7 +336,7 @@ interface {
 
 example payload:
 
-```json=
+```json
 {
     ctypes: {
         "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b": {
@@ -358,7 +364,7 @@ This closes the thread.
 | encryption | authenticated |
 
 payload: 
-```typescript=
+```typescript
 interface {
     credential: IAttestedClaim
     thread_id: ThreadId
