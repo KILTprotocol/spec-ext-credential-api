@@ -97,9 +97,6 @@ If they can't handle the received message, they can reject the Promise.
 
 ## Messaging Protocol
 
-Connecting Party = Attester / Verifier (Browser/Server)
-User Agent = Claimer (Browser Extension)
-
 ### General
 
 It is recommended, that users can allow the extension to use the keys for x minutes, so that the users doesn't have to enter his/her password everytime a message (even an error message) is sent.
@@ -110,7 +107,7 @@ ThreadId should be added, whenever available. This closes the Thread.
 
 |||
 |-|-|
-| direction | `Extension -> Browser | Browser -> Extension` |
+| direction | `Extension -> dApp | dApp -> Extension` |
 | message_type | `ERROR` |
 | description | General error, which should abort and reset the current workflow/protocol |
 | encryption | any |
@@ -125,7 +122,7 @@ interface {
 }
 ```
 
-> Error codes will be provided at a later time. For now, when receiving an error, the user agent and connecting party should reset. // @tjwelde
+> Error codes will be provided at a later time. For now, when receiving an error, the extension and dApp should reset. // @tjwelde
 
 #### ThreadId
 
@@ -141,13 +138,13 @@ Server: MultyPartyThreadId = "123;890"
 
 ### Handshake Workflow
 
-1. **Introduce Connecting Party**
+1. **DApp introduces itself**
 
 *Entrypoint*
 
 |||
 |-|-|
-| direction | `Browser -> Extension` |
+| direction | `dApp -> Extension` |
 | message_type | `SEND_DID` |
 |encryption | false |
 
@@ -155,11 +152,11 @@ content: `string`
 
 example_content: `did:kilt:1235`
 
-2. **User Agent Requests Authentication**
+2. **Extension requests authentication**
 
 |||
 |-|-|
-|direction | `Extension -> Browser` |
+|direction | `Extension -> dApp` |
 |message_type | `REQUEST_AUTHENTICATION` |
 |encryption| anonymous|
 
@@ -187,13 +184,13 @@ example_content:
 }
 ```
 
-3. **Connecting Party Authenticates with DID**
+3. **DApp authenticates with DID**
 
-Message includes a counter-challenge for the user agent to sign.
+Message includes a counter-challenge for the extension to sign.
 
 |||
 |-|-|
-| direction | `Browser -> Extension` |
+| direction | `dApp -> Extension` |
 | message_type | `SUBMIT_AUTHENTICATION` |
 | encryption | authenticated (to temporary key) |
 
@@ -217,15 +214,15 @@ example_content
 
 > signing the challenge is not strictly necessary bc the message is authenticated/signed // @rflechtner 
 
-> Might be very good to indicate that from this point on, the user agent (and the claimer) is 100% sure to be talking to a legit attester/verifier, so it is finally possible to reveal his DID (next step).
+> Might be very good to indicate that from this point on, the extension is 100% sure to be talking to a legit attester/verifier, so it is finally possible to reveal its DID (next step).
 
 ### Attestation Workflow
 
-1. **Attester Proposes Credential**
+1. **Attester proposes credential**
 
 |||
 |-|-|
-| direction | `Browser -> Extension` |
+| direction | `dApp -> Extension` |
 | message_type | `SUBMIT_TERMS`|
 
 content:
@@ -246,7 +243,7 @@ interface {
 }
 ```
 
-> The interface basically is the SubmitTerms message type, but I wasn't sure whether quotes and prerequisite claims are relevant for this use case. Prerequisite claims may better be handled via nested [Verification Workflows](#Verification-Workflow) after the user agent submitted the RequestForAttestation. // @rflechtner 
+> The interface basically is the SubmitTerms message type, but I wasn't sure whether quotes and prerequisite claims are relevant for this use case. Prerequisite claims may better be handled via nested [Verification Workflows](#Verification-Workflow) after the extension submitted the RequestForAttestation. // @rflechtner 
 
 > `prerequisites` is just an information for the user, that there will be a verification flow happening after the `request for attestation`, where the attester asks for credentials of specific ctypes to authenticate the user. // @tjwelde 
 
@@ -266,13 +263,13 @@ example_content:
 }
 ```
 
-2. **Claimer Requests Credential**
+2. **Extension requests credential**
 
 Only send with active consent of the user.
 
 |||
 |-|-|
-| direction | `Extension -> Browser` |
+| direction | `Extension -> dApp` |
 | message_type | `REQUEST_CREDENTIAL`|
 | encryption | authenticated |
 
@@ -291,15 +288,15 @@ interface IRequestForAttestation {
 }
 ```
 
-3. **Optional: Attester Requests Prerequisite Credentials**
+3. **Optional: Attester requests prerequisite credentials**
 
 One or more instances of the [Verification Workflow](#Verification-Workflow) may happen before attestation of the credential, if the Attester needs to see prerequisite credentials.
 
-4. **Attester Submits Credential**
+4. **Attester submits credential**
 
 |||
 |-|-|
-| direction | `Browser -> Extension` |
+| direction | `dApp -> Extension` |
 | message_type | `ATTESTED_CREDENTIAL`|
 | encryption | authenticated |
 
@@ -319,7 +316,7 @@ interface IAttestedClaim {
 }
 ```
 
-5. **Attester Rejects Attestation**
+5. **Attester rejects attestation**
 
 Send [Error type](#Error) message 
 
@@ -329,13 +326,13 @@ Send [Error type](#Error) message
 
 Repeat for multiple required credentials.
 
-1. **Connecting Party Requests Credential**
+1. **DApp requests credential**
 
 *Entrypoint*
 
 |   |   |
 | -------- | -------- |
-| direction | `Browser -> Extension`|
+| direction | `dApp -> Extension`|
 | message_type | `REQUEST_CREDENTIAL` |
 | encryption | authenticated |
 
@@ -371,14 +368,14 @@ example_content:
 }
 ```
 
-2. **User Agent Sends Credential**
+2. **Extension sends credential**
 
 Only send with active consent of the user.
 This closes the thread.
 
 |||
 |-|-|
-| direction | `Extension -> Browser` |
+| direction | `Extension -> dApp` |
 | message_type | `SUBMIT_CREDENTIAL`|
 | encryption | authenticated |
 
