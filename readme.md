@@ -17,13 +17,16 @@ It is a website that can interact with the extension via the API it exposes.
 
 ### Types
 
+`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` should be a human-readable string.
+
 ```typescript
 interface GlobalKilt {
-    [extensionName: string]: InjectedWindowProvider
+    [extensionId: string]: InjectedWindowProvider
 }
 
 interface InjectedWindowProvider {
     startSession: (dAppName: string) => Promise<PubSubSession>
+    name: string
     version: string
     specVersion: '0.1.0'
 }
@@ -41,13 +44,8 @@ interface PubSubSession {
 The dApp can get all the available extensions via iterating over the `window.kilt` object.
 
 ```typescript
-function getWindowExtensions(): (InjectedWindowProvider & { name: string })[] {
-    return Object.entries(window.kilt || {}).map(([name, {startSession, version, specVersion}]) => ({
-        name,
-        version,
-        specVersion,
-        startSession,
-    }));
+function getWindowExtensions(): InjectedWindowProvider[] {
+    return Object.values(window.kilt || {});
 }
 ```
 
@@ -74,11 +72,12 @@ async function startExtensionSession(
 ```typescript
 window.kilt as GlobalKilt = window.kilt || {};
 
-window.kilt[extensionName] = {
+window.kilt[extensionId] = {
     startSession: async (dAppName: string): Promise<PubSubSession> => {
         // Extension enables itself
         return { /*...*/ };
     },
+    name,
     version,
     specVersion: '0.1.0'
 } as InjectedWindowProvider;
