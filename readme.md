@@ -115,7 +115,7 @@ ThreadId should be added, whenever available. This closes the Thread.
 content:
 
 ```typescript
-interface {
+interface IError {
     code: number
     reason: string
     threadId?: ThreadId
@@ -163,7 +163,7 @@ example_content: `did:kilt:1235`
 content
 
 ```typescript
-interface {
+interface IRequestAuthentication {
     ctype: string,
     trustedAttesters: string[],
     temporaryEncryptionKey: string
@@ -197,7 +197,7 @@ Message includes a counter-challenge for the extension to sign.
 content:
 
 ```typescript
-interface { 
+interface ISubmitAuthentication { 
     credential: AttestedClaim
     threadId: ThreadId
 }
@@ -228,7 +228,7 @@ example_content
 content:
 
 ```typescript
-interface {
+interface ISubmitTerms {
     ctype: string
     claim: Partial<IClaim>
     delegationId?: string
@@ -339,7 +339,7 @@ Repeat for multiple required credentials.
 content:
 
 ```typescript
-interface {
+interface IRequestCredential {
     ctypes: {
         [key: string]: {
             trustedAttesters: string[]
@@ -382,7 +382,7 @@ This closes the thread.
 content: 
 
 ```typescript
-interface {
+interface ISubmitCredential {
     credential: IAttestedClaim
     threadId: ThreadId
 }
