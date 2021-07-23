@@ -41,7 +41,7 @@ interface PubSubSession {
 The dApp can get all the available extensions via iterating over the `window.kilt` object.
 
 ```typescript
-function getWindowExtensions(): InjectedWindowProvider[] {
+function getWindowExtensions(): (InjectedWindowProvider & { name: string })[] {
     return Object.entries(window.kilt || {}).map(([name, {startSession, version, specVersion}]) => ({
         name,
         version,
