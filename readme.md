@@ -107,7 +107,7 @@ ThreadId should be added, whenever available. This closes the Thread.
 
 |||
 |-|-|
-| direction | `Extension -> dApp | dApp -> Extension` |
+| direction | `Extension <-> dApp` |
 | message_type | `ERROR` |
 | description | General error, which should abort and reset the current workflow/protocol |
 | encryption | any |
