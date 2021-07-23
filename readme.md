@@ -17,14 +17,16 @@ It is a website that can interact with the extension via the API it exposes.
 
 ### Types
 
+`extensionId` only references the extension on the global Kilt object and is not used by the extension itself. `name` should be a human-readable string.
+
 ```typescript
 interface GlobalKilt {
     [extensionId: string]: InjectedWindowProvider
 }
 
 interface InjectedWindowProvider {
-    name: string
     startSession: (dAppName: string) => Promise<PubSubSession>
+    name: string
     version: string
     specVersion: '0.1.0'
 }
@@ -71,11 +73,11 @@ async function startExtensionSession(
 window.kilt as GlobalKilt = window.kilt || {};
 
 window.kilt[extensionId] = {
-    name,
     startSession: async (dAppName: string): Promise<PubSubSession> => {
         // Extension enables itself
         return { /*...*/ };
     },
+    name,
     version,
     specVersion: '0.1.0'
 } as InjectedWindowProvider;
