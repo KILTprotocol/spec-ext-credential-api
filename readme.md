@@ -17,7 +17,7 @@ It is a website that can interact with the extension via the API it exposes.
 
 ### Types
 
-`extensionId` only references the extension on the `GlobalKilt` object and is not used by the extension itself. `name` should be a human-readable string.
+`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` should be a human-readable string.
 
 ```typescript
 interface GlobalKilt {
