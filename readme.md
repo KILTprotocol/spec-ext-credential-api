@@ -149,7 +149,7 @@ Server: MultyPartyThreadId = "123;890"
 
 content: `string`
 
-example_content: `did:kilt:1235`
+example_content: `did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx`
 
 2. **Extension requests authentication**
 
@@ -176,9 +176,9 @@ example_content:
 {
     "ctype": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
     "trustedAttesters": [
-        "did:kilt:123abcd"
+        "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
     ],
-    "temporaryEncryptionKey": "0x342352523423abce",
+    "temporaryEncryptionKey": "0x2203a7731f1e4362cb21ff3ef7ce79204e1891fc62c4657040753283a00300d8",
     "threadId": "jh2g524g5kuy43g235"
 }
 ```
@@ -228,7 +228,7 @@ content:
 
 ```typescript
 interface ISubmitTerms {
-    ctype: string
+    cType: string
     claim: Partial<IClaim>
     delegationId?: string
     legitimations?: IAttestedClaim[]
@@ -252,12 +252,15 @@ example_content:
 
 ```json
 {
-    "ctype": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
+    "cType": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
     "claim": {
+      "cTypeHash": "0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5",
+      "contents": {
         "grade": 12,
         "passed": true
+      }
     },
-    "delegationId": "0x123",
+    "delegationId": "4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F",
     "threadId": "jh2g524g5kuy43g235;2342342jh"
 }
 ```
@@ -339,7 +342,7 @@ content:
 
 ```typescript
 interface IRequestCredential {
-    ctypes: {
+    cTypes: {
         [key: string]: {
             trustedAttesters: string[]
             requiredAttributes: string[]
@@ -353,10 +356,10 @@ example_content:
 
 ```json
 {
-    "ctypes": {
+    "cTypes": {
         "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b": {
             "trustedAttesters": [
-                "did:kilt:123abcd"
+                "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
             ],
             "requiredAttributes": [
                 "name"
