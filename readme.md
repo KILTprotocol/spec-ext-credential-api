@@ -109,7 +109,6 @@ It is recommended, that users can allow the extension to use the keys for x minu
 ThreadId should be added, whenever available. This closes the Thread.
 
 |||
-|-|-|
 | direction | `Extension -> Browser | Browser -> Extension` |
 | message_type | `ERROR` |
 | description | General error, which should abort and reset the current workflow/protocol |
@@ -146,7 +145,6 @@ Server: MultyPartyThreadId = "123;890"
 *Entrypoint*
 
 |||
-|-|-|
 | direction | `Browser -> Extension` |
 | message_type | `SEND_DID` |
 |encryption | false |
@@ -158,7 +156,6 @@ example_content: `did:kilt:1235`
 2. **User Agent Requests Authentication**
 
 |||
-|-|-|
 |direction | `Extension -> Browser` |
 |message_type | `REQUEST_AUTHENTICATION` |
 |encryption| anonymous|
@@ -192,7 +189,6 @@ example_content:
 Message includes a counter-challenge for the user agent to sign.
 
 |||
-|-|-|
 | direction | `Browser -> Extension` |
 | message_type | `SUBMIT_AUTHENTICATION` |
 | encryption | authenticated (to temporary key) |
@@ -224,7 +220,6 @@ example_content
 1. **Attester Proposes Credential**
 
 |||
-|-|-|
 | direction | `Browser -> Extension` |
 | message_type | `SUBMIT_TERMS`|
 
@@ -271,7 +266,6 @@ example_content:
 Only send with active consent of the user.
 
 |||
-|-|-|
 | direction | `Extension -> Browser` |
 | message_type | `REQUEST_CREDENTIAL`|
 | encryption | authenticated |
@@ -298,7 +292,6 @@ One or more instances of the [Verification Workflow](#Verification-Workflow) may
 4. **Attester Submits Credential**
 
 |||
-|-|-|
 | direction | `Browser -> Extension` |
 | message_type | `ATTESTED_CREDENTIAL`|
 | encryption | authenticated |
@@ -333,8 +326,7 @@ Repeat for multiple required credentials.
 
 *Entrypoint*
 
-|   |   |
-| -------- | -------- |
+|||
 | direction | `Browser -> Extension`|
 | message_type | `REQUEST_CREDENTIAL` |
 | encryption | authenticated |
@@ -377,7 +369,6 @@ Only send with active consent of the user.
 This closes the thread.
 
 |||
-|-|-|
 | direction | `Extension -> Browser` |
 | message_type | `SUBMIT_CREDENTIAL`|
 | encryption | authenticated |
