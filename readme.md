@@ -102,8 +102,6 @@ It is recommended, that users can allow the extension to use the keys for x minu
 
 #### Error
 
-ThreadId should be added, whenever available. This closes the Thread.
-
 |||
 |-|-|
 | direction | `Extension <-> dApp` |
@@ -117,23 +115,10 @@ content:
 interface IError {
     code: number
     reason: string
-    threadId?: ThreadId
 }
 ```
 
 > Error codes will be provided at a later time. For now, when receiving an error, the extension and dApp should reset. // @tjwelde
-
-#### ThreadId
-
-A thread id is agreed on by both parties by one of them sending the first half and the other one appending a second part after a `;`.
-Allowed IDs are base64 encoded strings.
-
-```typescript
-type ThreadId = SinglePartyThreadId | MultyPartyThreadId
-
-Extension: SinglePartyThreadId = "123"
-Server: MultyPartyThreadId = "123;890"
-```
 
 ### Handshake Workflow
 
@@ -163,23 +148,21 @@ content
 
 ```typescript
 interface IRequestAuthentication {
-    ctype: string,
-    trustedAttesters: string[],
+    cType: string
+    trustedAttesters: string[]
     temporaryEncryptionKey: string
-    threadId: string
-}   
+}
 ```
 
 example_content:
 
 ```json
 {
-    "ctype": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
+    "cType": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
     "trustedAttesters": [
         "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
     ],
-    "temporaryEncryptionKey": "0x2203a7731f1e4362cb21ff3ef7ce79204e1891fc62c4657040753283a00300d8",
-    "threadId": "jh2g524g5kuy43g235"
+    "temporaryEncryptionKey": "0x2203a7731f1e4362cb21ff3ef7ce79204e1891fc62c4657040753283a00300d8"
 }
 ```
 
@@ -198,7 +181,6 @@ content:
 ```typescript
 interface ISubmitAuthentication { 
     credential: AttestedClaim
-    threadId: ThreadId
 }
 ```
 
@@ -206,8 +188,7 @@ example_content
 
 ```json
 { 
-    "credential": {},
-    "threadId": "jh2g524g5kuy43g235;2342342jh"
+    "credential": {}
 }
 ```
 
@@ -238,7 +219,6 @@ interface ISubmitTerms {
     //    trustedAttesters: string[]
     //    required: boolean
     //}[]
-    threadId: ThreadId
 }
 ```
 
@@ -254,14 +234,13 @@ example_content:
 {
     "cType": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
     "claim": {
-      "cTypeHash": "0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5",
-      "contents": {
-        "grade": 12,
-        "passed": true
-      }
+        "cTypeHash": "0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5",
+        "contents": {
+            "grade": 12,
+            "passed": true
+        }
     },
-    "delegationId": "4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F",
-    "threadId": "jh2g524g5kuy43g235;2342342jh"
+    "delegationId": "4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F"
 }
 ```
 
@@ -286,7 +265,6 @@ interface IRequestForAttestation {
     delegationId: IDelegationBaseNode['id'] | null
     legitimations: IAttestedClaim[]
     rootHash: Hash
-    threadId: ThreadId
 }
 ```
 
@@ -314,7 +292,6 @@ interface IAttestedClaim {
         delegationId: IDelegationBaseNode['id'] | null
         revoked: boolean
     }
-    threadId: ThreadId
 }
 ```
 
@@ -348,7 +325,6 @@ interface IRequestCredential {
             requiredAttributes: string[]
         }
     }
-    threadId: ThreadId
 }   
 ```
 
@@ -365,8 +341,7 @@ example_content:
                 "name"
             ]
         }
-    },
-    "threadId": "jh2g524g5kuy43g235;2342342jh"
+    }
 }
 ```
 
@@ -386,7 +361,6 @@ content:
 ```typescript
 interface ISubmitCredential {
     credential: IAttestedClaim
-    threadId: ThreadId
 }
 ```
 
