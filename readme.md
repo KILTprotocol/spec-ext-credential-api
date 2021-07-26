@@ -389,3 +389,60 @@ interface ISubmitCredential {
     threadId: ThreadId
 }
 ```
+
+## Security considerations
+
+The strong encryption used in the communication prevents the class of attacks on the communication protocol itself, 
+however several other attack surfaces remain. Discarding all of them by putting the full responsibility on the user
+will risk slowing down the growth of the ecosystem: users will have to invest unreasonable efforts to use it safely.
+
+### Malware
+
+Not much can be done if some malware has full control over user’s computer. 
+Protection against keyloggers with disc and/or network traffic access is out of scope of this specification.
+
+### Evil extensions
+
+Extensions are limited by the API the browsers provide to them, but the control over network requests 
+combined with the capability to inject code in the runtime makes the resistance futile. 
+Protection against the evil extensions is also out of scope of this specification.
+
+### Phishing and social engineering
+
+DApps can be malicious. A typo in the URI or a search request might lead the user to the dApp that should not be trusted.
+
+In the real world the trust relies on the societal mechanisms and is usually distributed from centralized sources.
+An example of that on the internet are the Extended Validation SSL certificates signed by Certification Authorities 
+from a hard-coded list. This approach does not translate directly into the decentralized blockchain ecosystem. 
+
+Every verifier can list their trusted attesters, thus delegating them the trust. One downside here is that the list will
+likely be quite long, and making the user to choose from it would result in the poor user experience. More serious issue
+is that the verifier itself might be a part of the malicious network and thus cannot be trusted.
+
+A decentralized solution to determine the high trustworthiness of an identity is required. 
+Several alternatives look promising.
+
+- Since the KILT Coin balance of an identity is publicly available, 
+  confirming that the dApp owns a lot of coins provides some signal of serious intentions.
+- Proof of stake (with a reasonable slashing mechanism) will let dApps advertise their incentive to behave properly. 
+- Other mechanisms specific to the KILT network might work for indicating trustworthiness.
+
+### Man-in-the-middle
+
+A significant fraction of websites embeds third-party scripts, advertisement being the most common source. 
+Malicious actors have already used this path to inject malicious code in the runtime of the page. 
+This runtime is the only medium for communication between the dApp and the extension, 
+so the evil code has a way to position itself as a man-in-the-middle.
+
+Messages that are encrypted and signed are invulnerable to such attacks, 
+but the extension needs to receive the public key of the dApp out of band, 
+and the protection from replay attacks is required as well.
+
+Replay attacks can be prevented by the participants responding to the challenges provided by the other party and/or 
+by quoting in the message plaintext of some unique ID of the previous message.
+
+The tamper-proof mechanism for the extension to receive the public key of the dApp is defined in the
+[Well Known DID Configuration specification](https://identity.foundation/.well-known/resources/did-configuration/).
+
+The dApp should include the identity of the extension in its signed messages, and the extension should verify it 
+to ensure that a MitM code does not replace the extension identity with its own.
