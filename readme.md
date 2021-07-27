@@ -150,8 +150,6 @@ Definitions of data types, if not provided here, can be found in
 Error codes are currently unspecified. 
 Upon receiving an error message, the extension and the dApp should abort and reset the current workflow.
 
-content:
-
 ```typescript
 interface IError {
     code: number
@@ -175,8 +173,6 @@ if the Attester needs to see prerequisite credentials.
 | direction | `dApp -> Extension` |
 | message_type | `SUBMIT_TERMS`|
 
-content:
-
 ```typescript
 interface ISubmitTerms {
     cType: string
@@ -185,12 +181,8 @@ interface ISubmitTerms {
     legitimations?: IAttestedClaim[]
     // quote?: IQuoteAttesterSigned
 }
-```
 
-example_content:
-
-```json
-{
+const exampleTerms: ISubmitTerms = {
     "cType": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
     "claim": {
         "cTypeHash": "0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5",
@@ -203,6 +195,7 @@ example_content:
 }
 ```
 
+
 2. **Extension requests credential**
 
 Only send with active consent of the user.
@@ -211,8 +204,6 @@ Only send with active consent of the user.
 |-|-|
 | direction | `Extension -> dApp` |
 | message_type | `REQUEST_CREDENTIAL`|
-
-content: `IRequestForAttestation`
 
 ```typescript
 interface IRequestForAttestation {
@@ -232,8 +223,6 @@ interface IRequestForAttestation {
 |-|-|
 | direction | `dApp -> Extension` |
 | message_type | `ATTESTED_CREDENTIAL`|
-
-content: `IAttestedClaim`
 
 ```typescript
 interface IAttestedClaim {
@@ -265,8 +254,6 @@ Repeat for multiple required credentials.
 | direction | `dApp -> Extension`|
 | message_type | `REQUEST_CREDENTIAL` |
 
-content:
-
 ```typescript
 interface IRequestCredential {
     cTypes: {
@@ -276,12 +263,8 @@ interface IRequestCredential {
         }
     }
 }   
-```
 
-example_content:
-
-```json
-{
+const exampleRequest: IRequestCredential = {
     "cTypes": {
         "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b": {
             "trustedAttesters": [
@@ -304,8 +287,6 @@ This closes the thread.
 |-|-|
 | direction | `Extension -> dApp` |
 | message_type | `SUBMIT_CREDENTIAL`|
-
-content: 
 
 ```typescript
 interface ISubmitCredential {
