@@ -198,6 +198,12 @@ example_content
 
 ### Attestation Workflow
 
+0. **Optional: Attester requests prerequisite credentials**
+
+One or more instances of the [Verification Workflow](#Verification-Workflow) may happen before proposition of the credential, 
+if the Attester needs to see prerequisite credentials.
+
+
 1. **Attester proposes credential**
 
 |||
@@ -214,19 +220,8 @@ interface ISubmitTerms {
     delegationId?: string
     legitimations?: IAttestedClaim[]
     // quote?: IQuoteAttesterSigned
-    //prerequisites?: {
-    //    ctype: string
-    //    trustedAttesters: string[]
-    //    required: boolean
-    //}[]
 }
 ```
-
-> The interface basically is the SubmitTerms message type, but I wasn't sure whether quotes and prerequisite claims are relevant for this use case. Prerequisite claims may better be handled via nested [Verification Workflows](#Verification-Workflow) after the extension submitted the RequestForAttestation. // @rflechtner 
-
-> `prerequisites` is just an information for the user, that there will be a verification flow happening after the `request for attestation`, where the attester asks for credentials of specific ctypes to authenticate the user. // @tjwelde 
-
-> For now we leave `prerequisites` out and see how applications use the verification flow and watch out for usefulness. // @tjwelde 
 
 example_content:
 
@@ -268,11 +263,7 @@ interface IRequestForAttestation {
 }
 ```
 
-3. **Optional: Attester requests prerequisite credentials**
-
-One or more instances of the [Verification Workflow](#Verification-Workflow) may happen before attestation of the credential, if the Attester needs to see prerequisite credentials.
-
-4. **Attester submits credential**
+3. **Attester submits credential**
 
 |||
 |-|-|
