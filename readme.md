@@ -128,7 +128,7 @@ If they can't handle the received message, they can reject the Promise.
 Third-party code tampering with these calls is pointless:
 - modifying the `dAppIdentity` will be detected by Well Known DID Configuration checks
 - modifying the nonce will be detected by the dApp backend
-- replaying responses from other valid identities will result in signedNonce mismatch
+- replaying responses from other valid identities will result in a `signedNonce` mismatch
 - pretending to be the extension will fail on the next step:
   MitM will not be able to sign the message sent to extension with a DID matching the origin. 
 
