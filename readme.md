@@ -107,7 +107,7 @@ window.kilt[extensionId] = {
 The extension must perform the following tasks in `startSession`:
 - follow steps in Well Known DID Configuration to confirm that the `dAppIdentity` is controlled by the same entity
   as the page origin
-- generate a temporary keypair for the encryption of messages of current session
+- generate a temporary keypair for encryption of messages of the current session
 - use this keypair to sign the dApp-provided nonce
 
 The extension should perform following tasks in `startSession`:
