@@ -135,13 +135,15 @@ Third-party code tampering with these calls is pointless:
 
 ## Messaging Protocol
 
-#### Error
+### Errors
 
 |||
 |-|-|
 | direction | `Extension <-> dApp` |
 | message_type | `ERROR` |
-| description | General error, which should abort and reset the current workflow/protocol |
+
+Error codes are currently unspecified. 
+Upon receiving an error message, the extension and the dApp should abort and reset the current workflow.
 
 content:
 
@@ -151,8 +153,6 @@ interface IError {
     reason: string
 }
 ```
-
-> Error codes will be provided at a later time. For now, when receiving an error, the extension and dApp should reset. // @tjwelde
 
 
 ### Attestation Workflow
