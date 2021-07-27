@@ -25,7 +25,11 @@ interface GlobalKilt {
 }
 
 interface InjectedWindowProvider {
-    startSession: (dAppName: string) => Promise<PubSubSession>
+    startSession: (
+        dAppName: string, 
+        dAppIdentity: IPublicIdentity, 
+        nonce: string
+    ) => Promise<PubSubSession>
     name: string
     version: string
     specVersion: '0.1.0'
@@ -35,6 +39,8 @@ interface PubSubSession {
     listen: (callback: (message: Message) => Promise<void>) => Promise<void>
     close: () => Promise<void>
     send: (message: Message) => Promise<void>
+    identity: IPublicIdentity
+    signedNonce: string
 }
 ```
 
@@ -56,15 +62,27 @@ The user selects the extension on this list, and the communication starts from t
 async function startExtensionSession(
     extension: InjectedWindowProvider,
     dAppName: string,
+    dAppIdentity: IPublicIdentity, 
+    nonce: string
 ): Promise<PubSubSession> {
     try {
-        return await extension.startSession(dAppName);
+        const session = await extension.startSession(dAppName, dAppIdentity, nonce);
+        
+        // This verification must happen on the server side.
+        Crypto.verify(nonce, session.signedNonce, session.identity.address);
+        
+        return session;
     } catch (error) {
         console.error(`Error initializing ${extension.name}: ${error.message}`);
         throw error;
     }
 }
 ```
+
+The nonce must be used only once. 
+The dApp must store a copy of the nonce on the server-side to prevent tampering. 
+The dApp must verify that the signature of signedNonce returned by extension matches its identity 
+to prevent replay attacks.
 
 
 ### Extension injects its API into a webpage
@@ -73,8 +91,11 @@ async function startExtensionSession(
 window.kilt as GlobalKilt = window.kilt || {};
 
 window.kilt[extensionId] = {
-    startSession: async (dAppName: string): Promise<PubSubSession> => {
-        // Extension enables itself
+    startSession: async (
+        dAppName: string, 
+        dAppIdentity: IPublicIdentity, 
+        nonce: string
+    ): Promise<PubSubSession> => {
         return { /*...*/ };
     },
     name,
@@ -83,7 +104,15 @@ window.kilt[extensionId] = {
 } as InjectedWindowProvider;
 ```
 
-`startSession` function gives the extension the possibility to initialize itself (maybe ask the user for permission to communicate with the page) and the URL of the page (which can be directly accessed by the extension) can be checked against an internal whitelist/blacklist.
+The extension must perform the following tasks in `startSession`:
+- follow steps in Well Known DID Configuration to confirm that the `dAppIdentity` is controlled by the same entity
+  as the page origin
+- generate a temporary keypair for encryption of messages of the current session
+- use this keypair to sign the dApp-provided nonce
+
+The extension should perform the following tasks in `startSession`:
+- ensure that the user has previously authorized interaction with the provided DID
+- otherwise, request user authorization for this interaction
 
 
 ### Processing the messages
@@ -94,11 +123,17 @@ The Promise should be resolved after the dApp or the extension have finished pro
 If they can't handle the received message, they can reject the Promise.
 
 
+### Security concerns while setting up the session
+
+Third-party code tampering with these calls is pointless:
+- modifying the `dAppIdentity` will be detected by Well Known DID Configuration checks
+- modifying the nonce will be detected by the dApp backend
+- replaying responses from other valid identities will result in a `signedNonce` mismatch
+- pretending to be the extension will fail on the next step:
+  MitM will not be able to sign the message sent to extension with a DID matching the origin. 
+
+
 ## Messaging Protocol
-
-### General
-
-It is recommended, that users can allow the extension to use the keys for x minutes, so that the users doesn't have to enter his/her password everytime a message (even an error message) is sent.
 
 #### Error
 
@@ -120,81 +155,6 @@ interface IError {
 
 > Error codes will be provided at a later time. For now, when receiving an error, the extension and dApp should reset. // @tjwelde
 
-### Handshake Workflow
-
-1. **DApp introduces itself**
-
-*Entrypoint*
-
-|||
-|-|-|
-| direction | `dApp -> Extension` |
-| message_type | `SEND_DID` |
-|encryption | false |
-
-content: `string`
-
-example_content: `did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx`
-
-2. **Extension requests authentication**
-
-|||
-|-|-|
-|direction | `Extension -> dApp` |
-|message_type | `REQUEST_AUTHENTICATION` |
-|encryption| anonymous|
-
-content
-
-```typescript
-interface IRequestAuthentication {
-    cType: string
-    trustedAttesters: string[]
-    temporaryEncryptionKey: string
-}
-```
-
-example_content:
-
-```json
-{
-    "cType": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-    "trustedAttesters": [
-        "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
-    ],
-    "temporaryEncryptionKey": "0x2203a7731f1e4362cb21ff3ef7ce79204e1891fc62c4657040753283a00300d8"
-}
-```
-
-3. **DApp authenticates with DID**
-
-Message includes a counter-challenge for the extension to sign.
-
-|||
-|-|-|
-| direction | `dApp -> Extension` |
-| message_type | `SUBMIT_AUTHENTICATION` |
-| encryption | authenticated (to temporary key) |
-
-content:
-
-```typescript
-interface ISubmitAuthentication { 
-    credential: AttestedClaim
-}
-```
-
-example_content
-
-```json
-{ 
-    "credential": {}
-}
-```
-
-> signing the challenge is not strictly necessary bc the message is authenticated/signed // @rflechtner 
-
-> Might be very good to indicate that from this point on, the extension is 100% sure to be talking to a legit attester/verifier, so it is finally possible to reveal its DID (next step).
 
 ### Attestation Workflow
 
@@ -301,8 +261,6 @@ Send [Error type](#Error) message
 
 ### Verification Workflow
 
-*Prerequisite:* Authentication has finished via [Handshake Workflow](#Handshake-Workflow)
-
 Repeat for multiple required credentials.
 
 1. **DApp requests credential**
@@ -364,22 +322,28 @@ interface ISubmitCredential {
 }
 ```
 
+
 ## Security considerations
 
 The strong encryption used in the communication prevents the class of attacks on the communication protocol itself, 
 however several other attack surfaces remain. Discarding all of them by putting the full responsibility on the user
 will risk slowing down the growth of the ecosystem: users will have to invest unreasonable efforts to use it safely.
 
+
 ### Malware
 
 Not much can be done if some malware has full control over user’s computer. 
-Protection against keyloggers with disc and/or network traffic access is out of scope of this specification.
+
+*Conclusion:* protection against keyloggers with disc and/or network traffic access is outside the scope of this specification.
+
 
 ### Evil extensions
 
 Extensions are limited by the API the browsers provide to them, but the control over network requests 
 combined with the capability to inject code in the runtime makes the resistance futile. 
-Protection against the evil extensions is also out of scope of this specification.
+
+*Conclusion:* protection against evil extensions is also outside the scope of this specification.
+
 
 ### Phishing and social engineering
 
@@ -393,13 +357,11 @@ Every verifier can list their trusted attesters, thus delegating them the trust.
 likely be quite long, and making the user to choose from it would result in the poor user experience. More serious issue
 is that the verifier itself might be a part of the malicious network and thus cannot be trusted.
 
-A decentralized solution to determine the high trustworthiness of an identity is required. 
-Several alternatives look promising.
+*Conclusion:* a decentralized solution to determine the high trustworthiness of an identity is required. 
+Some mechanisms specific to the KILT network might work for indicating trustworthiness.
+Since the KILT Coin balance of an identity is publicly available, 
+confirming that the dApp owns a large amount of coins also provides some signal of serious intentions.
 
-- Since the KILT Coin balance of an identity is publicly available, 
-  confirming that the dApp owns a lot of coins provides some signal of serious intentions.
-- Proof of stake (with a reasonable slashing mechanism) will let dApps advertise their incentive to behave properly. 
-- Other mechanisms specific to the KILT network might work for indicating trustworthiness.
 
 ### Man-in-the-middle
 
@@ -407,16 +369,37 @@ A significant fraction of websites embeds third-party scripts, advertisement bei
 Malicious actors have already used this path to inject malicious code in the runtime of the page. 
 This runtime is the only medium for communication between the dApp and the extension, 
 so the evil code has a way to position itself as a man-in-the-middle.
-
 Messages that are encrypted and signed are invulnerable to such attacks, 
-but the extension needs to receive the public key of the dApp out of band, 
-and the protection from replay attacks is required as well.
+as the MitM can neither modify nor read them. Nor can it inject its own messages into the stream.
 
-Replay attacks can be prevented by the participants responding to the challenges provided by the other party and/or 
-by quoting in the message plaintext of some unique ID of the previous message.
+*Countermeasures:* 
 
-The tamper-proof mechanism for the extension to receive the public key of the dApp is defined in the
+The extension needs to confirm the public key of the dApp out of band.
+The tamper-proof mechanism for that is defined in the
 [Well Known DID Configuration specification](https://identity.foundation/.well-known/resources/did-configuration/).
 
-The dApp should include the identity of the extension in its signed messages, and the extension should verify it 
-to ensure that a MitM code does not replace the extension identity with its own.
+Replay attacks will be prevented by participants responding to challenges provided by the other party and/or 
+by including some unique ID of the previous message in the response.
+
+
+### Privacy
+
+The identifiers, including DIDs, should not be exposed to dApps without user consent.
+
+*Countermeasures:* even during consequent visits to a dApp approved by the user, 
+the exposure of the DIDs should happen at the latest possible moment.
+This communication happens via encrypted messages, so the DIDs are safe from MitM attacks.
+
+
+### Keeping the private key encrypted
+
+The extensions store the private keys on disk in an encrypted form. 
+It is likely that even when the extension runs in the browser, 
+the lifetime of unencrypted private keys in the RAM is short.
+
+*Countermeasures:* given that the extension needs the private key to decode a message from dApp,
+we recommend using a one-per-page-load temporary key pair to encrypt the messages,
+not the keypairs of real identities. 
+
+The private keys are still needed to sign certain types of messages, 
+they should be removed from the RAM after the message is signed.
