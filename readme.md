@@ -142,7 +142,6 @@ Third-party code tampering with these calls is pointless:
 | direction | `Extension <-> dApp` |
 | message_type | `ERROR` |
 | description | General error, which should abort and reset the current workflow/protocol |
-| encryption | any |
 
 content:
 
@@ -207,7 +206,6 @@ Only send with active consent of the user.
 |-|-|
 | direction | `Extension -> dApp` |
 | message_type | `REQUEST_CREDENTIAL`|
-| encryption | authenticated |
 
 content: `IRequestForAttestation`
 
@@ -229,7 +227,6 @@ interface IRequestForAttestation {
 |-|-|
 | direction | `dApp -> Extension` |
 | message_type | `ATTESTED_CREDENTIAL`|
-| encryption | authenticated |
 
 content: `IAttestedClaim`
 
@@ -262,7 +259,6 @@ Repeat for multiple required credentials.
 | -------- | -------- |
 | direction | `dApp -> Extension`|
 | message_type | `REQUEST_CREDENTIAL` |
-| encryption | authenticated |
 
 content:
 
@@ -303,7 +299,6 @@ This closes the thread.
 |-|-|
 | direction | `Extension -> dApp` |
 | message_type | `SUBMIT_CREDENTIAL`|
-| encryption | authenticated |
 
 content: 
 
