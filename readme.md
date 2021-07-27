@@ -135,6 +135,11 @@ Third-party code tampering with these calls is pointless:
 
 ## Messaging Protocol
 
+### Data types
+
+Definitions of data types, if not provided here, can be found in 
+[the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/globals.html).
+
 ### Errors
 
 |||
