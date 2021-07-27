@@ -5,19 +5,20 @@
 ### Extension
 
 A browser extension that stores and uses the identities and credentials of the user. 
-When the user visits a webpage, the extension injects its API in this webpage.
+When the user visits a webpage, the extension injects its API into this webpage.
 
 ### dApp
 
-Decentralized application. Examples of dApp in this specification are Attester and Verifier.
-It is a website that can interact with the extension via the API it exposes.
+Decentralized application – a website that can interact with the extension via the API it exposes.
+The example dApps in this specification are Attester and Verifier.
 
 
 ## Setting up the communication session
 
 ### Types
 
-`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` should be a human-readable string.
+`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` should be a human-readable 
+string.
 
 ```typescript
 interface GlobalKilt {
@@ -47,7 +48,7 @@ interface PubSubSession {
 
 ### DApp consumes the API exposed by extension 
 
-The dApp can get all the available extensions via iterating over the `window.kilt` object.
+The dApp can get all available extensions by iterating over the `window.kilt` object.
 
 ```typescript
 function getWindowExtensions(): InjectedWindowProvider[] {
@@ -56,7 +57,7 @@ function getWindowExtensions(): InjectedWindowProvider[] {
 ```
 
 The dApp should list all available extensions it can work with. 
-The user selects the extension on this list, and the communication starts from there.
+The user selects an extension from this list, and the communication starts from there.
 
 ```typescript
 async function startExtensionSession(
@@ -81,7 +82,7 @@ async function startExtensionSession(
 
 The nonce must be used only once. 
 The dApp must store a copy of the nonce on the server-side to prevent tampering. 
-The dApp must verify that the signature of signedNonce returned by extension matches its identity 
+The dApp must verify that the signature of `signedNonce` returned by the extension matches its identity 
 to prevent replay attacks.
 
 
@@ -104,13 +105,13 @@ window.kilt[extensionId] = {
 } as InjectedWindowProvider;
 ```
 
-The extension must perform the following tasks in `startSession`:
+The extension **must** perform the following tasks in `startSession`:
 - follow steps in Well Known DID Configuration to confirm that the `dAppIdentity` is controlled by the same entity
   as the page origin
 - generate a temporary keypair for encryption of messages of the current session
 - use this keypair to sign the dApp-provided nonce
 
-The extension should perform the following tasks in `startSession`:
+The extension **should** perform the following tasks in `startSession`:
 - ensure that the user has previously authorized interaction with the provided DID
 - otherwise, request user authorization for this interaction
 
@@ -119,7 +120,7 @@ The extension should perform the following tasks in `startSession`:
 
 Messages should be queued until the dApp calls `listen`.
 
-The Promise should be resolved after the dApp or the extension have finished processing the message.
+The Promise should be resolved after the dApp or extension has finished processing the message.
 If they can't handle the received message, they can reject the Promise.
 
 
@@ -130,7 +131,7 @@ Third-party code tampering with these calls is pointless:
 - modifying the nonce will be detected by the dApp backend
 - replaying responses from other valid identities will result in a `signedNonce` mismatch
 - pretending to be the extension will fail on the next step:
-  MitM will not be able to sign the message sent to extension with a DID matching the origin. 
+  MitM will not be able to sign the message sent to the extension with a DID that matches the origin. 
 
 
 ## Messaging Protocol
@@ -312,36 +313,36 @@ interface ISubmitCredential {
 ## Security considerations
 
 The strong encryption used in the communication prevents the class of attacks on the communication protocol itself, 
-however several other attack surfaces remain. Discarding all of them by putting the full responsibility on the user
+however several other attack surfaces remain. Ignoring all of them by placing full responsibility on the user
 will risk slowing down the growth of the ecosystem: users will have to invest unreasonable efforts to use it safely.
 
 
 ### Malware
 
-Not much can be done if some malware has full control over user’s computer. 
+Not much can be done if some malware has full control of the user’s computer. 
 
 *Conclusion:* protection against keyloggers with disc and/or network traffic access is outside the scope of this specification.
 
 
 ### Evil extensions
 
-Extensions are limited by the API the browsers provide to them, but the control over network requests 
-combined with the capability to inject code in the runtime makes the resistance futile. 
+Extensions are limited by the API that browsers provide to them, but control over network requests 
+combined with the capability to inject code in the runtime makes resistance futile. 
 
 *Conclusion:* protection against evil extensions is also outside the scope of this specification.
 
 
 ### Phishing and social engineering
 
-DApps can be malicious. A typo in the URI or a search request might lead the user to the dApp that should not be trusted.
+DApps can be malicious. A typo in the URI or a search request might lead the user to a dApp that should not be trusted.
 
-In the real world the trust relies on the societal mechanisms and is usually distributed from centralized sources.
-An example of that on the internet are the Extended Validation SSL certificates signed by Certification Authorities 
+In the real world, trust relies on societal mechanisms and is usually distributed from centralized sources.
+An example from the internet is the Extended Validation SSL certificates signed by Certification Authorities 
 from a hard-coded list. This approach does not translate directly into the decentralized blockchain ecosystem. 
 
-Every verifier can list their trusted attesters, thus delegating them the trust. One downside here is that the list will
-likely be quite long, and making the user to choose from it would result in the poor user experience. More serious issue
-is that the verifier itself might be a part of the malicious network and thus cannot be trusted.
+Every verifier can list their trusted attesters, thus delegating them trust. One downside to this solution is that the list 
+will likely be quite long, and making the user choose from it would result in a poor user experience. A more serious issue 
+with this approach is that the verifier itself might be a part of a malicious network and thus cannot be trusted.
 
 *Conclusion:* a decentralized solution to determine the high trustworthiness of an identity is required. 
 Some mechanisms specific to the KILT network might work for indicating trustworthiness.
@@ -351,7 +352,7 @@ confirming that the dApp owns a large amount of coins also provides some signal 
 
 ### Man-in-the-middle
 
-A significant fraction of websites embeds third-party scripts, advertisement being the most common source. 
+A significant fraction of websites embed third-party scripts, advertisement being the most common source. 
 Malicious actors have already used this path to inject malicious code in the runtime of the page. 
 This runtime is the only medium for communication between the dApp and the extension, 
 so the evil code has a way to position itself as a man-in-the-middle.
@@ -388,4 +389,4 @@ we recommend using a one-per-page-load temporary key pair to encrypt the message
 not the keypairs of real identities. 
 
 The private keys are still needed to sign certain types of messages, 
-they should be removed from the RAM after the message is signed.
+but they should be removed from the RAM after the message has been signed.
