@@ -370,7 +370,7 @@ Malicious actors have already used this path to inject malicious code in the run
 This runtime is the only medium for communication between the dApp and the extension, 
 so the evil code has a way to position itself as a man-in-the-middle.
 Messages that are encrypted and signed are invulnerable to such attacks, 
-as the MitM can neither modify, nor read them, nor inject its own messages into the stream.
+as the MitM can neither modify nor read them. Nor can it inject its own messages into the stream.
 
 *Countermeasures:* 
 
