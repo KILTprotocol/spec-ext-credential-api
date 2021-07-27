@@ -68,7 +68,7 @@ async function startExtensionSession(
     try {
         const session = await extension.startSession(dAppName, dAppIdentity, nonce);
         
-        // This verification must happen on server side.
+        // This verification must happen on the server side.
         Crypto.verify(nonce, session.signedNonce, session.identity.address);
         
         return session;
