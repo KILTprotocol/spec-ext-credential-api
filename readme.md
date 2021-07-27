@@ -17,8 +17,7 @@ The example dApps in this specification are Attester and Verifier.
 
 ### Types
 
-`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` should be a human-readable 
-string.
+`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` should be a human-readable string.
 
 ```typescript
 interface GlobalKilt {
