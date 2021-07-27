@@ -388,7 +388,7 @@ The identifiers, including DIDs, should not be exposed to dApps without user con
 
 *Countermeasures:* even during consequent visits to a dApp approved by the user, 
 the exposure of the DIDs should happen at the latest possible moment.
-This communication happens via the encrypted messages, so the DIDs are safe from MitM attacks.
+This communication happens via encrypted messages, so the DIDs are safe from MitM attacks.
 
 
 ### Keeping the private key encrypted
