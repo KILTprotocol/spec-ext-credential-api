@@ -110,7 +110,7 @@ The extension must perform the following tasks in `startSession`:
 - generate a temporary keypair for encryption of messages of the current session
 - use this keypair to sign the dApp-provided nonce
 
-The extension should perform following tasks in `startSession`:
+The extension should perform the following tasks in `startSession`:
 - ensure that the user has previously authorized interaction with the provided DID
 - otherwise, request user authorization for this interaction
 
