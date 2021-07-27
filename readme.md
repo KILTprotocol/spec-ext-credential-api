@@ -155,81 +155,6 @@ interface IError {
 
 > Error codes will be provided at a later time. For now, when receiving an error, the extension and dApp should reset. // @tjwelde
 
-### Handshake Workflow
-
-1. **DApp introduces itself**
-
-*Entrypoint*
-
-|||
-|-|-|
-| direction | `dApp -> Extension` |
-| message_type | `SEND_DID` |
-|encryption | false |
-
-content: `string`
-
-example_content: `did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx`
-
-2. **Extension requests authentication**
-
-|||
-|-|-|
-|direction | `Extension -> dApp` |
-|message_type | `REQUEST_AUTHENTICATION` |
-|encryption| anonymous|
-
-content
-
-```typescript
-interface IRequestAuthentication {
-    cType: string
-    trustedAttesters: string[]
-    temporaryEncryptionKey: string
-}
-```
-
-example_content:
-
-```json
-{
-    "cType": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-    "trustedAttesters": [
-        "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
-    ],
-    "temporaryEncryptionKey": "0x2203a7731f1e4362cb21ff3ef7ce79204e1891fc62c4657040753283a00300d8"
-}
-```
-
-3. **DApp authenticates with DID**
-
-Message includes a counter-challenge for the extension to sign.
-
-|||
-|-|-|
-| direction | `dApp -> Extension` |
-| message_type | `SUBMIT_AUTHENTICATION` |
-| encryption | authenticated (to temporary key) |
-
-content:
-
-```typescript
-interface ISubmitAuthentication { 
-    credential: AttestedClaim
-}
-```
-
-example_content
-
-```json
-{ 
-    "credential": {}
-}
-```
-
-> signing the challenge is not strictly necessary bc the message is authenticated/signed // @rflechtner 
-
-> Might be very good to indicate that from this point on, the extension is 100% sure to be talking to a legit attester/verifier, so it is finally possible to reveal its DID (next step).
 
 ### Attestation Workflow
 
@@ -335,8 +260,6 @@ interface IAttestedClaim {
 Send [Error type](#Error) message 
 
 ### Verification Workflow
-
-*Prerequisite:* Authentication has finished via [Handshake Workflow](#Handshake-Workflow)
 
 Repeat for multiple required credentials.
 
