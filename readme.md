@@ -342,7 +342,7 @@ Not much can be done if some malware has full control over user’s computer.
 Extensions are limited by the API the browsers provide to them, but the control over network requests 
 combined with the capability to inject code in the runtime makes the resistance futile. 
 
-*Conclusion:* protection against the evil extensions is also out of scope of this specification.
+*Conclusion:* protection against evil extensions is also outside the scope of this specification.
 
 
 ### Phishing and social engineering
