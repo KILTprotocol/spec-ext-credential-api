@@ -104,7 +104,7 @@ window.kilt[extensionId] = {
 } as InjectedWindowProvider;
 ```
 
-The extension must perform following tasks in `startSession`:
+The extension must perform the following tasks in `startSession`:
 - follow steps in Well Known DID Configuration to confirm that the `dAppIdentity` is controlled by the same entity
   as the page origin
 - generate a temporary keypair for the encryption of messages of current session
