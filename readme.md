@@ -378,7 +378,7 @@ The extension needs to confirm the public key of the dApp out of band.
 The tamper-proof mechanism for that is defined in the
 [Well Known DID Configuration specification](https://identity.foundation/.well-known/resources/did-configuration/).
 
-Replay attacks will be prevented by the participants responding to the challenges provided by the other party and/or 
+Replay attacks will be prevented by participants responding to challenges provided by the other party and/or 
 by quoting in the message plaintext of some unique ID of the previous message.
 
 
