@@ -379,7 +379,7 @@ The tamper-proof mechanism for that is defined in the
 [Well Known DID Configuration specification](https://identity.foundation/.well-known/resources/did-configuration/).
 
 Replay attacks will be prevented by participants responding to challenges provided by the other party and/or 
-by quoting in the message plaintext of some unique ID of the previous message.
+by including some unique ID of the previous message in the response.
 
 
 ### Privacy
@@ -402,4 +402,4 @@ we recommend using a one-per-page-load temporary key pair to encrypt the message
 not the keypairs of real identities. 
 
 The private keys are still needed to sign certain types of messages, 
-they should be removed from the RAM after that.
+they should be removed from the RAM after the message is signed.
