@@ -386,7 +386,7 @@ by quoting in the message plaintext of some unique ID of the previous message.
 
 The identifiers, including DIDs, should not be exposed to dApps without user consent.
 
-*Countermeasures:* even during the consequent visits to a dApp approved by the user, 
+*Countermeasures:* even during consequent visits to a dApp approved by the user, 
 the exposure of the DIDs should happen at the latest possible moment.
 This communication happens via the encrypted messages, so the DIDs are safe from MitM attacks.
 
