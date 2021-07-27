@@ -143,7 +143,7 @@ Third-party code tampering with these calls is pointless:
 | message_type | `ERROR` |
 
 Error codes are currently unspecified. 
-On receiving the error message the extension and the dApp should abort and reset the current workflow.
+Upon receiving an error message, the extension and the dApp should abort and reset the current workflow.
 
 content:
 
