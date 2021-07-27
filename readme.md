@@ -334,7 +334,7 @@ will risk slowing down the growth of the ecosystem: users will have to invest un
 
 Not much can be done if some malware has full control over user’s computer. 
 
-*Conclusion:* protection against keyloggers with disc and/or network traffic access is out of scope of this specification.
+*Conclusion:* protection against keyloggers with disc and/or network traffic access is outside the scope of this specification.
 
 
 ### Evil extensions
