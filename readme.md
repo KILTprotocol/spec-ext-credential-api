@@ -146,6 +146,16 @@ Third-party code tampering with these calls is pointless:
 Definitions of data types, if not provided here, can be found in 
 [the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/globals.html).
 
+
+### Encryption - TODO
+
+This section is a placeholder for the documentation on how the messages are encrypted.
+
+Each message sent using the `PubSubSession` is signed and encrypted using the keypairs of communicating parties.
+This prevents third parties, for example MitM attackers, from reading and/or modifying the contents of the messages,
+as well from injecting their own messages in the session.
+
+
 ### Errors
 
 |||
