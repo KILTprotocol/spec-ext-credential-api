@@ -150,7 +150,7 @@ Definitions of data types, if not provided here, can be found in
 
 |||
 |-|-|
-| direction | `Extension <-> dApp` |
+| direction | `extension <-> dApp` |
 | message_type | `ERROR` |
 
 Error codes are currently unspecified. 
@@ -176,8 +176,8 @@ if the Attester needs to see prerequisite credentials.
 
 |||
 |-|-|
-| direction | `dApp -> Extension` |
-| message_type | `SUBMIT_TERMS`|
+| direction | `dApp -> extension` |
+| message_type | `'submit-terms'` |
 
 ```typescript
 interface ISubmitTerms {
@@ -208,8 +208,8 @@ Only send with active consent of the user.
 
 |||
 |-|-|
-| direction | `Extension -> dApp` |
-| message_type | `REQUEST_CREDENTIAL`|
+| direction | `extension -> dApp` |
+| message_type | `'request-attestation'`|
 
 ```typescript
 interface IRequestForAttestation {
@@ -228,8 +228,8 @@ interface IRequestForAttestation {
 
 |||
 |-|-|
-| direction | `dApp -> Extension` |
-| message_type | `ATTESTED_CREDENTIAL`|
+| direction | `dApp -> extension` |
+| message_type | `'submit-attestation'`|
 
 ```typescript
 interface IAttestedClaim {
@@ -259,8 +259,8 @@ Repeat for multiple required credentials.
 
 |||
 |-|-|
-| direction | `dApp <-> Extension`|
-| message_type | `REQUEST_CREDENTIAL` |
+| direction | `dApp <-> extension`|
+| message_type | `'request-credential'` |
 
 ```typescript
 interface IRequestCredential {
@@ -292,8 +292,8 @@ Extension must only send the credential with active consent of the user.
 
 |||
 |-|-|
-| direction | `Extension <-> dApp` |
-| message_type | `SUBMIT_CREDENTIAL`|
+| direction | `extension <-> dApp` |
+| message_type | `'submit-credential'`|
 
 ```typescript
 interface ISubmitCredential {
