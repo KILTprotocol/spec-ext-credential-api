@@ -181,7 +181,7 @@ content:
 interface ISubmitTerms {
     cType: string
     claim: Partial<IClaim>
-    delegationId?: string
+    delegationId?: IDelegationBaseNode['id']
     legitimations?: IAttestedClaim[]
     // quote?: IQuoteAttesterSigned
 }
@@ -220,7 +220,7 @@ interface IRequestForAttestation {
     claimNonceMap: Record<Hash, string>
     claimHashes: Hash[]
     claimerSignature: string
-    delegationId: IDelegationBaseNode['id'] | null
+    delegationId?: IDelegationBaseNode['id']
     legitimations: IAttestedClaim[]
     rootHash: Hash
 }
@@ -242,7 +242,7 @@ interface IAttestedClaim {
         claimHash: string
         cTypeHash: ICType['hash']
         owner: IPublicIdentity['address']
-        delegationId: IDelegationBaseNode['id'] | null
+        delegationId?: IDelegationBaseNode['id']
         revoked: boolean
     }
 }
