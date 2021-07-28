@@ -160,13 +160,13 @@ interface IError {
 
 ### Attestation Workflow
 
-0. **Optional: Attester requests prerequisite credentials**
+#### 0. Optional: Attester requests prerequisite credentials
 
 One or more instances of the [Verification Workflow](#Verification-Workflow) may happen before proposition of the credential
 if the Attester needs to see prerequisite credentials.
 
 
-1. **Attester proposes credential**
+#### 1. Attester proposes credential
 
 |||
 |-|-|
@@ -196,7 +196,7 @@ const exampleTerms: ISubmitTerms = {
 ```
 
 
-2. **Extension requests credential**
+#### 2. Extension requests credential
 
 Only send with active consent of the user.
 
@@ -217,7 +217,8 @@ interface IRequestForAttestation {
 }
 ```
 
-3. **Attester submits credential**
+
+#### 3. Attester submits credential
 
 |||
 |-|-|
@@ -237,7 +238,8 @@ interface IAttestedClaim {
 }
 ```
 
-5. **Attester rejects attestation**
+
+#### 5. Attester rejects attestation
 
 Send [Error type](#Error) message 
 
@@ -246,7 +248,8 @@ Send [Error type](#Error) message
 
 Repeat for multiple required credentials.
 
-1. **DApp or extension requests credential**
+
+#### 1. DApp or extension requests credential
 
 |||
 |-|-|
@@ -277,7 +280,7 @@ const exampleRequest: IRequestCredential = {
 }
 ```
 
-2. **Extension or dApp sends credential**
+#### 2. Extension or dApp sends credential
 
 Extension must only send the credential with active consent of the user.
 
