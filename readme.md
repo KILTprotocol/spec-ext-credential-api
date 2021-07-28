@@ -47,6 +47,12 @@ interface PubSubSession {
 
 ### DApp consumes the API exposed by extension 
 
+The dApp must create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
+
+```typescript
+window.kilt = {}
+```
+
 The dApp can get all available extensions by iterating over the `window.kilt` object.
 
 ```typescript
@@ -87,10 +93,10 @@ to prevent replay attacks.
 
 ### Extension injects its API into a webpage
 
-```typescript
-window.kilt as GlobalKilt = window.kilt || {};
+The extension must only inject itself into pages having the `window.kilt` object.
 
-window.kilt[extensionId] = {
+```typescript
+(window.kilt as GlobalKilt)[extensionId] = {
     startSession: async (
         dAppName: string, 
         dAppIdentity: IPublicIdentity, 
