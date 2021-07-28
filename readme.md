@@ -232,15 +232,12 @@ interface IRequestForAttestation {
 | message_type | `'submit-attestation'`|
 
 ```typescript
-interface IAttestedClaim {
-    request: IRequestForAttestation
-    attestation: {
-        claimHash: string
-        cTypeHash: ICType['hash']
-        owner: IPublicIdentity['address']
-        delegationId?: IDelegationBaseNode['id']
-        revoked: boolean
-    }
+interface IAttestation {
+    claimHash: string
+    cTypeHash: ICType['hash']
+    owner: IPublicIdentity['address']
+    delegationId?: IDelegationBaseNode['id']
+    revoked: boolean
 }
 ```
 
