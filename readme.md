@@ -189,13 +189,15 @@ if the Attester needs to see prerequisite credentials.
 | direction | `dApp -> extension` |
 | message_type | `'submit-terms'` |
 
+The processing of the optional field `quote` is currently unspecified.
+
 ```typescript
 interface ISubmitTerms {
     cType: string
     claim: Partial<IClaim>
     delegationId?: IDelegationBaseNode['id']
     legitimations?: IAttestedClaim[]
-    // quote?: IQuoteAttesterSigned
+    quote?: IQuoteAttesterSigned
 }
 
 const exampleTerms: ISubmitTerms = {
