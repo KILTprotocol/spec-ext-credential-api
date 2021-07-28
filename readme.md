@@ -241,17 +241,16 @@ interface IAttestedClaim {
 
 Send [Error type](#Error) message 
 
+
 ### Verification Workflow
 
 Repeat for multiple required credentials.
 
-1. **DApp requests credential**
+1. **DApp or extension requests credential**
 
-*Entrypoint*
-
-|   |   |
-| -------- | -------- |
-| direction | `dApp -> Extension`|
+|||
+|-|-|
+| direction | `dApp <-> Extension`|
 | message_type | `REQUEST_CREDENTIAL` |
 
 ```typescript
@@ -278,14 +277,13 @@ const exampleRequest: IRequestCredential = {
 }
 ```
 
-2. **Extension sends credential**
+2. **Extension or dApp sends credential**
 
-Only send with active consent of the user.
-This closes the thread.
+Extension must only send the credential with active consent of the user.
 
 |||
 |-|-|
-| direction | `Extension -> dApp` |
+| direction | `Extension <-> dApp` |
 | message_type | `SUBMIT_CREDENTIAL`|
 
 ```typescript
