@@ -28,7 +28,7 @@ interface InjectedWindowProvider {
     startSession: (
         dAppName: string, 
         dAppIdentity: IPublicIdentity, 
-        nonce: string
+        challenge: UUID
     ) => Promise<PubSubSession>
     name: string
     version: string
@@ -40,7 +40,7 @@ interface PubSubSession {
     close: () => Promise<void>
     send: (message: Message) => Promise<void>
     identity: IPublicIdentity
-    signedNonce: string
+    signedChallenge: string
 }
 ```
 
@@ -69,13 +69,13 @@ async function startExtensionSession(
     extension: InjectedWindowProvider,
     dAppName: string,
     dAppIdentity: IPublicIdentity, 
-    nonce: string
+    challenge: UUID
 ): Promise<PubSubSession> {
     try {
-        const session = await extension.startSession(dAppName, dAppIdentity, nonce);
+        const session = await extension.startSession(dAppName, dAppIdentity, challenge);
         
         // This verification must happen on the server side.
-        Crypto.verify(nonce, session.signedNonce, session.identity.address);
+        Crypto.verify(challenge, session.signedChallenge, session.identity.address);
         
         return session;
     } catch (error) {
@@ -85,9 +85,9 @@ async function startExtensionSession(
 }
 ```
 
-The nonce must be used only once. 
-The dApp must store a copy of the nonce on the server-side to prevent tampering. 
-The dApp must verify that the signature of `signedNonce` returned by the extension matches its identity 
+The `challenge` must be used only once. 
+The dApp must store a copy of the `challenge` on the server-side to prevent tampering. 
+The dApp must verify that the signature of `signedChallenge` returned by the extension matches its identity 
 to prevent replay attacks.
 
 
@@ -100,7 +100,7 @@ The extension must only inject itself into pages having the `window.kilt` object
     startSession: async (
         dAppName: string, 
         dAppIdentity: IPublicIdentity, 
-        nonce: string
+        challenge: UUID
     ): Promise<PubSubSession> => {
         return { /*...*/ };
     },
@@ -114,7 +114,7 @@ The extension **must** perform the following tasks in `startSession`:
 - follow steps in Well Known DID Configuration to confirm that the `dAppIdentity` is controlled by the same entity
   as the page origin
 - generate a temporary keypair for encryption of messages of the current session
-- use this keypair to sign the dApp-provided nonce
+- use this keypair to sign the dApp-provided `challenge`
 
 The extension **should** perform the following tasks in `startSession`:
 - ensure that the user has previously authorized interaction with the provided DID
@@ -133,8 +133,8 @@ If they can't handle the received message, they can reject the Promise.
 
 Third-party code tampering with these calls is pointless:
 - modifying the `dAppIdentity` will be detected by Well Known DID Configuration checks
-- modifying the nonce will be detected by the dApp backend
-- replaying responses from other valid identities will result in a `signedNonce` mismatch
+- modifying the `challenge` will be detected by the dApp backend
+- replaying responses from other valid identities will result in a `signedChallenge` mismatch
 - pretending to be the extension will fail on the next step:
   MitM will not be able to sign the message sent to the extension with a DID that matches the origin. 
 
@@ -204,7 +204,7 @@ const exampleTerms: ISubmitTerms = {
 
 #### 2. Extension requests credential
 
-Only send with active consent of the user.
+The extension must only send the request with active consent of the user.
 
 |||
 |-|-|
@@ -259,14 +259,18 @@ Repeat for multiple required credentials.
 | direction | `dApp <-> extension`|
 | message_type | `'request-credential'` |
 
+The `challenge` must be used only once. 
+The dApp must store a copy of the `challenge` on the server-side to prevent tampering. 
+
 ```typescript
 interface IRequestCredential {
     cTypes: {
-        [key: string]: {
+        [cTypeId: string]: {
             trustedAttesters: string[]
             requiredAttributes: string[]
         }
     }
+    challenge: UUID
 }   
 
 const exampleRequest: IRequestCredential = {
@@ -279,13 +283,20 @@ const exampleRequest: IRequestCredential = {
                 "name"
             ]
         }
-    }
+    },
+    "challenge": "f7546f31-bd3a-464c-bb43-9d622968c3a4"
 }
 ```
 
 #### 2. Extension or dApp sends credential
 
-Extension must only send the credential with active consent of the user.
+The extension must only send the credential with active consent of the user.
+The `challenge` from the previous message must be signed using the private key 
+of the identity which owns the credential. This prevents replay attacks 
+by confirming the ownership of this identity.
+
+The dApp must verify in the backend that the signature of `signedChallenge`
+returned by the extension matches its identity to prevent replay attacks.
 
 |||
 |-|-|
@@ -295,6 +306,7 @@ Extension must only send the credential with active consent of the user.
 ```typescript
 interface ISubmitCredential {
     credential: IAttestedClaim
+    signedChallenge: string
 }
 ```
 
