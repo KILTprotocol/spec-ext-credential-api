@@ -13,11 +13,17 @@ Decentralized application – a website that can interact with the extension via
 The example dApps in this specification are Attester and Verifier.
 
 
+## Specification of requirements
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in RFC 2119.
+
+
 ## Setting up the communication session
 
 ### Types
 
-`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` should be a human-readable string.
+`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` SHOULD be a human-readable string.
 
 ```typescript
 interface GlobalKilt {
@@ -47,7 +53,7 @@ interface PubSubSession {
 
 ### DApp consumes the API exposed by extension 
 
-The dApp must create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
+The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
 
 ```typescript
 window.kilt = {}
@@ -85,15 +91,15 @@ async function startExtensionSession(
 }
 ```
 
-The `challenge` must be used only once. 
-The dApp must store a copy of the `challenge` on the server-side to prevent tampering. 
-The dApp must verify that the signature of `signedChallenge` returned by the extension matches its identity 
+The `challenge` MUST be used only once. 
+The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
+The dApp MUST verify that the signature of `signedChallenge` returned by the extension matches its identity 
 to prevent replay attacks.
 
 
 ### Extension injects its API into a webpage
 
-The extension must only inject itself into pages having the `window.kilt` object.
+The extension MUST only inject itself into pages having the `window.kilt` object.
 
 ```typescript
 (window.kilt as GlobalKilt)[extensionId] = {
@@ -110,22 +116,22 @@ The extension must only inject itself into pages having the `window.kilt` object
 } as InjectedWindowProvider;
 ```
 
-The extension **must** perform the following tasks in `startSession`:
+The extension MUST perform the following tasks in `startSession`:
 - follow steps in Well Known DID Configuration to confirm that the `dAppIdentity` is controlled by the same entity
   as the page origin
 - generate a temporary keypair for encryption of messages of the current session
 - use this keypair to sign the dApp-provided `challenge`
 
-The extension **should** perform the following tasks in `startSession`:
+The extension SHOULD perform the following tasks in `startSession`:
 - ensure that the user has previously authorized interaction with the provided DID
 - otherwise, request user authorization for this interaction
 
 
 ### Processing the messages
 
-Messages should be queued until the dApp calls `listen`.
+Messages SHOULD be queued until the dApp calls `listen`.
 
-The Promise should be resolved after the dApp or extension has finished processing the message.
+The Promise SHOULD be resolved after the dApp or extension has finished processing the message.
 If they can't handle the received message, they can reject the Promise.
 
 
@@ -161,10 +167,10 @@ as well from injecting their own messages in the session.
 |||
 |-|-|
 | direction | `extension <-> dApp` |
-| message_type | `ERROR` |
+| message_type | `'error'` |
 
 Error codes are currently unspecified. 
-Upon receiving an error message, the extension and the dApp should abort and reset the current workflow.
+Upon receiving an error message, the extension and the dApp SHOULD abort and reset the current workflow.
 
 ```typescript
 interface IError {
@@ -178,7 +184,7 @@ interface IError {
 
 #### 0. Optional: Attester requests prerequisite credentials
 
-One or more instances of the [Verification Workflow](#Verification-Workflow) may happen before proposition of the credential
+One or more instances of the [Verification Workflow](#Verification-Workflow) MAY happen before proposition of the credential
 if the Attester needs to see prerequisite credentials.
 
 
@@ -216,7 +222,7 @@ const exampleTerms: ISubmitTerms = {
 
 #### 2. Extension requests credential
 
-The extension must only send the request with active consent of the user.
+The extension MUST only send the request with active consent of the user.
 
 |||
 |-|-|
@@ -271,8 +277,8 @@ Repeat for multiple required credentials.
 | direction | `dApp <-> extension`|
 | message_type | `'request-credential'` |
 
-The `challenge` must be used only once. 
-The dApp must store a copy of the `challenge` on the server-side to prevent tampering. 
+The `challenge` MUST be used only once. 
+The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
 
 ```typescript
 interface IRequestCredential {
@@ -302,12 +308,12 @@ const exampleRequest: IRequestCredential = {
 
 #### 2. Extension or dApp sends credential
 
-The extension must only send the credential with active consent of the user.
-The `challenge` from the previous message must be signed using the private key 
+The extension MUST only send the credential with active consent of the user.
+The `challenge` from the previous message MUST be signed using the private key 
 of the identity which owns the credential. This prevents replay attacks 
 by confirming the ownership of this identity.
 
-The dApp must verify in the backend that the signature of `signedChallenge`
+The dApp MUST verify in the backend that the signature of `signedChallenge`
 returned by the extension matches its identity to prevent replay attacks.
 
 |||
