@@ -184,7 +184,7 @@ interface IError {
 
 #### 0. Optional: Attester requests prerequisite credentials
 
-One or more instances of the [Verification Workflow](#Verification-Workflow) may happen before proposition of the credential
+One or more instances of the [Verification Workflow](#Verification-Workflow) MAY happen before proposition of the credential
 if the Attester needs to see prerequisite credentials.
 
 
