@@ -80,7 +80,7 @@ async function startExtensionSession(
     try {
         const session = await extension.startSession(dAppName, dAppIdentity, challenge);
         
-        // This verification must happen on the server side.
+        // This verification must happen on the server-side.
         Crypto.verify(challenge, session.signedChallenge, session.identity.address);
         
         return session;
@@ -161,6 +161,9 @@ Each message sent using the `PubSubSession` is signed and encrypted using the ke
 This prevents third parties, for example MitM attackers, from reading and/or modifying the contents of the messages,
 as well from injecting their own messages in the session.
 
+Consequently, the dApp can decode messages from the extension only on the server-side,
+since its private key is only available there. The extension can decode messages from the dApp
+only in its background script, so that its private key remains outside of reach of 3rd parties.
 
 ### Errors
 
