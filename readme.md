@@ -165,6 +165,58 @@ Consequently, the dApp can decode messages from the extension only on the server
 since its private key is only available there. The extension can decode messages from the dApp
 only in its background script, so that its private key remains outside of reach of 3rd parties.
 
+
+### Rejections
+
+|||
+|-|-|
+| direction | `extension <-> dApp` |
+| message_type | `'reject'` |
+
+Rejection messages signal the intentional cancelling an individual step in the flow.
+
+Rejection messages are generic. The order of the messages defines what is being rejected: 
+it will be the last message from the other party. If the other party has not yet sent a message, 
+or their last message does not imply a response, or they have already received the response, 
+they MUST ignore the rejection message. 
+With this approach we intend to reduce the complexity of having multiple types of messages, 
+defining how they should reference whatever they are rejecting, and how to process messages arriving out of order.
+
+The interaction is mostly driven from the dApp UI, which also has more screen estate compared to extensions. 
+In the multi-step flow, the user might want to cancel either an individual step or the whole flow. 
+Providing and explaining both options in the limited space might be challenging, 
+so the extension SHOULD provide means to cancel an individual step, while the dApp SHOULD provide both options. 
+The user also always has the last resort of simply closing the dApp page.
+
+The extension SHOULD report the closure of the popup (by the user or because of the switch to another app)
+as a cancelling, not an error.
+
+On receiving an error or a rejection from the dApp, the extension SHOULD offer options to retry and to cancel. 
+On receiving an error or a rejection from the extension, the dApp SHOULD highlight the option to cancel the flow 
+and MAY offer an option to trigger a retry. However, cancelling of a step SHOULD NOT automatically cancel the flow, 
+since we expect many actions to be trial and error exploration of possibilities, as in the following example.
+
+When the attester requests credentials from the user via the nested verification workflow, 
+their CTypes are compared using hashes, which the user cannot conveniently do manually in advance. 
+The user’s train of thought could be: "They want some kind of credential, let’s see if mine would suit them. 
+Okay, it did not, so I cannot provide what they want, but I do not want to cancel the whole flow."
+
+In a different scenario, the extension MAY try to detect the trustworthiness of the dApp 
+by requesting from it some credentials, and the dApp MAY reject these requests. 
+The extension MAY use the results of this exchange to indicate to the user its level of confidence 
+in the trustworthiness of the dApp, for example, as the browsers do for SSL and EV certificates.
+
+```typescript
+interface IRejection {
+    /** Optional machine-readable type of the rejection */
+    name?: string
+    
+    /** Optional human-readable description of the rejection */
+    message?: string
+}
+```
+
+
 ### Errors
 
 |||
@@ -172,13 +224,20 @@ only in its background script, so that its private key remains outside of reach 
 | direction | `extension <-> dApp` |
 | message_type | `'error'` |
 
-Error codes are currently unspecified. 
-Upon receiving an error message, the extension and the dApp SHOULD abort and reset the current workflow.
+Error messages signal the unintentional programming errors which happened during the processing of the incoming messages
+or when constructing a response message.
+
+If an error has happened while setting up the communication session, the session SHOULD be aborted or restarted.
+After the session has started, errors SHOULD NOT be thrown, only sent as messages to guarantee authenticity.
+So the call of `send()` SHOULD NOT throw errors. The same applies to the `callback` provided to the `listen()` call.
 
 ```typescript
 interface IError {
-    code: number
-    reason: string
+    /** Optional machine-readable type of the error */
+    name?: string
+
+    /** Optional human-readable description of the error */
+    message?: string
 }
 ```
 
@@ -322,11 +381,6 @@ interface IAttestation {
     revoked: boolean
 }
 ```
-
-
-#### 6. Attester rejects attestation
-
-Send [Error type](#Error) message 
 
 
 ### Verification Workflow
