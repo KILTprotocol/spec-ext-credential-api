@@ -198,7 +198,10 @@ if the Attester needs to see prerequisite credentials.
 | direction | `dApp -> extension` |
 | message_type | `'submit-terms'` |
 
-The processing of the optional field `quote` is currently unspecified.
+The processing of the optional field `quote` is currently unspecified. 
+
+If the attester requires payment to issue this credential, the `quote` MUST be present.
+If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
 
 ```typescript
 interface ISubmitTerms {
@@ -227,10 +230,14 @@ const exampleTerms: ISubmitTerms = {
 
 The extension MUST only send the request with active consent of the user.
 
+If the `quote` was provided, and the user has entered the password to decrypt the private key for signing the request,
+the extension SHOULD temporarily cache either the password or the unencrypted private key, 
+so that the user does not need to enter it again when the payment needs to be transferred.
+
 |||
 |-|-|
 | direction | `extension -> dApp` |
-| message_type | `'request-attestation'`|
+| message_type | `'request-attestation'` |
 
 ```typescript
 interface IRequestForAttestation {
@@ -244,17 +251,71 @@ interface IRequestForAttestation {
 }
 ```
 
+Upon receiving the `'request-attestation'` message the attester MUST perform checks that all necessary data is in place
+and properly formatted, so that actual attestation can be started.
+This MUST be done before sending the `'request-payment'` message or requesting the user to pay via other means.
+If any of the checks have failed, the attester MUST NOT request the payment via any means.
 
-#### 3. Attester submits credential
+
+#### 3. Optional: Attester requests payment
+
+This specification does not prescribe the means of payment.
+
+This attester MUST NOT send this message if it does not require payment to issue this credential.
+This attester MUST NOT send this message if the payment happens via the attester website.
+
+This attester MAY send this message if it wants the user to transfer payment in KILT Coins by themselves 
+without interrupting the flow.
+
+Upon receiving the `'request-payment'` message the extension SHOULD show the user the interface 
+to authorize the transfer of the payment to the attester.
+The previously provided `quote` contains the amount to be paid (`cost.gross`) 
+and the recipient address (`attesterAddress`).
 
 |||
 |-|-|
 | direction | `dApp -> extension` |
-| message_type | `'submit-attestation'`|
+| message_type | `'request-payment'` |
+
+```typescript
+interface IRequestForPayment {
+    /** same as the `rootHash` value of the `'request-attestation'` message */
+    claimHash: Hash
+}
+```
+
+
+#### 4. Optional: Extension confirms payment
+
+After the user has authorized the payment, and it had been transferred, the extension MUST confirm the transfer
+to the attester by sending the `'confirm-payment'` message.
+
+|||
+|-|-|
+| direction | `extension -> dApp` |
+| message_type | `'confirm-payment'` |
+
+```typescript
+interface IPaymentConfirmation {
+    /** same as the `rootHash` value of the `'request-attestation'` message */
+    claimHash: Hash
+    
+    /** the hash of the payment transaction */
+    txHash: Hash
+}
+```
+
+
+#### 5. Attester submits credential
+
+|||
+|-|-|
+| direction | `dApp -> extension` |
+| message_type | `'submit-attestation'` |
 
 ```typescript
 interface IAttestation {
-    claimHash: string
+    claimHash: Hash
     cTypeHash: ICType['hash']
     owner: IPublicIdentity['address']
     delegationId?: IDelegationBaseNode['id']
@@ -263,7 +324,7 @@ interface IAttestation {
 ```
 
 
-#### 5. Attester rejects attestation
+#### 6. Attester rejects attestation
 
 Send [Error type](#Error) message 
 
