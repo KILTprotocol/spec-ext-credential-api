@@ -287,7 +287,7 @@ interface IRequestForPayment {
 
 #### 4. Optional: Extension confirms payment
 
-After the user has authorized the payment, and it had been transferred, the extension MUST confirm the transfer
+After the user has authorized the payment and it has been transferred, the extension MUST confirm the transfer
 to the attester by sending the `'confirm-payment'` message.
 
 |||
