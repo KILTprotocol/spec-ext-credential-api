@@ -173,7 +173,7 @@ only in its background script, so that its private key remains outside of reach 
 | direction | `extension <-> dApp` |
 | message_type | `'reject'` |
 
-Rejection messages signal the intentional cancelling an individual step in the flow.
+Rejection messages signal the intentional cancelling of an individual step in the flow.
 
 Rejection messages are generic. The order of the messages defines what is being rejected: 
 it will be the last message from the other party. If the other party has not yet sent a message, 
