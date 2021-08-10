@@ -224,7 +224,7 @@ interface IRejection {
 | direction | `extension <-> dApp` |
 | message_type | `'error'` |
 
-Error messages signal the unintentional programming errors which happened during the processing of the incoming messages
+Error messages signal unintentional programming errors which happened during the processing of the incoming messages
 or when constructing a response message.
 
 If an error has happened while setting up the communication session, the session SHOULD be aborted or restarted.
