@@ -142,7 +142,8 @@ Third-party code tampering with these calls is pointless:
 - modifying the `challenge` will be detected by the dApp backend
 - replaying responses from other valid identities will result in a `signedChallenge` mismatch
 - pretending to be the extension will fail on the next step:
-  MitM will not be able to sign the message sent to the extension with a DID that matches the origin. 
+  MitM will not be able to encrypt the message sent to the extension with the authentication 
+  of a DID that matches the origin. 
 
 
 ## Messaging Protocol
@@ -157,7 +158,7 @@ Definitions of data types, if not provided here, can be found in
 
 This section is a placeholder for the documentation on how the messages are encrypted.
 
-Each message sent using the `PubSubSession` is signed and encrypted using the keypairs of communicating parties.
+Each message sent using the `PubSubSession` is protected using authenticated encryption based on the keypairs of communicating parties.
 This prevents third parties, for example MitM attackers, from reading and/or modifying the contents of the messages,
 as well from injecting their own messages in the session.
 
@@ -493,7 +494,7 @@ A significant fraction of websites embed third-party scripts, advertisement bein
 Malicious actors have already used this path to inject malicious code in the runtime of the page. 
 This runtime is the only medium for communication between the dApp and the extension, 
 so the evil code has a way to position itself as a man-in-the-middle.
-Messages that are encrypted and signed are invulnerable to such attacks, 
+Messages that are encrypted and authenticated are invulnerable to such attacks, 
 as the MitM can neither modify nor read them. Nor can it inject its own messages into the stream.
 
 *Countermeasures:* 
@@ -525,5 +526,5 @@ the lifetime of unencrypted private keys in the RAM is short.
 we recommend using a one-per-page-load temporary key pair to encrypt the messages,
 not the keypairs of real identities. 
 
-The private keys are still needed to sign certain types of messages, 
-but they should be removed from the RAM after the message has been signed.
+The private keys are still needed to sign certain requests, 
+but should be removed from the RAM after signing them.
