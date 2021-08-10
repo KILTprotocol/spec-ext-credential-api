@@ -189,7 +189,7 @@ so the extension SHOULD provide means to cancel an individual step, while the dA
 The user also always has the last resort of simply closing the dApp page.
 
 The extension SHOULD report the closure of the popup (by the user or because of the switch to another app)
-as a cancelling, not an error.
+as a cancellation, not an error.
 
 On receiving an error or a rejection from the dApp, the extension SHOULD offer options to retry and to cancel. 
 On receiving an error or a rejection from the extension, the dApp SHOULD highlight the option to cancel the flow 
