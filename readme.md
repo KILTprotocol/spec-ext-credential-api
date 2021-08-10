@@ -179,8 +179,8 @@ Rejection messages are generic. The order of the messages defines what is being 
 it will be the last message from the other party. If the other party has not yet sent a message, 
 or their last message does not imply a response, or they have already received the response, 
 they MUST ignore the rejection message. 
-With this approach we intend to reduce the complexity of having multiple types of messages, 
-defining how they should reference whatever they are rejecting, and how to process messages arriving out of order.
+With this approach we intend to reduce the complexity (otherwise we would need to have multiple types of messages, 
+to define how they should reference whatever they are rejecting, and how to process messages arriving out of order).
 
 The interaction is mostly driven from the dApp UI, which also has more screen estate compared to extensions. 
 In the multi-step flow, the user might want to cancel either an individual step or the whole flow. 
