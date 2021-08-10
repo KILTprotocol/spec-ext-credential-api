@@ -227,7 +227,7 @@ interface IRejection {
 Error messages signal unintentional programming errors which happened during the processing of the incoming messages
 or when constructing a response message.
 
-If an error has happened while setting up the communication session, the session SHOULD be aborted or restarted.
+If an error happened while setting up the communication session, the session SHOULD be aborted or restarted.
 After the session has started, errors SHOULD NOT be thrown, only sent as messages to guarantee authenticity.
 So the call of `send()` SHOULD NOT throw errors. The same applies to the `callback` provided to the `listen()` call.
 
