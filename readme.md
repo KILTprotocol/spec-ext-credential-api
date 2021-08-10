@@ -193,7 +193,7 @@ as a cancellation, not an error.
 
 On receiving an error or a rejection from the dApp, the extension SHOULD offer options to retry and to cancel. 
 On receiving an error or a rejection from the extension, the dApp SHOULD highlight the option to cancel the flow 
-and MAY offer an option to trigger a retry. However, cancelling of a step SHOULD NOT automatically cancel the flow, 
+and MAY offer an option to trigger a retry. However, cancelling a step SHOULD NOT automatically cancel the flow, 
 since we expect many actions to be trial and error exploration of possibilities, as in the following example.
 
 When the attester requests credentials from the user via the nested verification workflow, 
