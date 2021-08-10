@@ -175,10 +175,10 @@ only in its background script, so that its private key remains outside of reach 
 
 Rejection messages signal the intentional cancelling of an individual step in the flow.
 
-Rejection messages are generic. The order of the messages defines what is being rejected: 
-it will be the last message from the other party. If the other party has not yet sent a message, 
-or their last message does not imply a response, or they have already received the response, 
-they MUST ignore the rejection message. 
+Rejection messages are generic. What is being rejected is defined by the order of messages: 
+the rejection message rejects the last message the other party (OP) has sent.
+If OP has not yet sent a message, or OP’s last message does not imply a response, 
+or OP has already received the response, then OP MUST ignore the rejection message.
 With this approach we intend to reduce the complexity (otherwise we would need to have multiple types of messages, 
 to define how they should reference whatever they are rejecting, and how to process messages arriving out of order).
 
