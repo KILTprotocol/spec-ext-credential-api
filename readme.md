@@ -177,7 +177,7 @@ only in its background script, so that its private key remains outside of reach 
 Rejection messages signal the intentional cancelling of an individual step in the flow.
 
 Rejection messages are generic. The message field `inReplyTo` contains the `messageId` of the message being rejected. 
-If OP has not sent such a message, or this message does not imply a response, 
+If the other party (OP) has not sent such a message, or this message does not imply a response, 
 or OP has already received the response, then OP MUST ignore the rejection message.
 The parties SHOULD only send a rejection message for the latest message received. 
 
