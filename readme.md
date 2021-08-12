@@ -168,7 +168,7 @@ To encrypt the message the sender MUST convert it to JSON and use the `x25519-xs
 with the private key of the sender, the public key of the recipient, and 24 random bytes as a nonce.
 The encrypted message contains the ciphertext, the IDs of the keys used, and the nonce.
 
-To decrypt the message the recipient MUST resolve the key IDs to keys, use `x25519-xsalsa20-poly1305` 
+To decrypt the message the recipient MUST resolve the key IDs to keys, then use `x25519-xsalsa20-poly1305` 
 with the private key of the recipient, the public key of the sender, and the nonce to restore the JSON from ciphertext.  
 After parsing this JSON the recipient MUST ensure that the `sender` field contains the DID of the other party.
 
