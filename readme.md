@@ -235,7 +235,7 @@ So the call of `send()` SHOULD NOT throw errors. The same applies to the `callba
 There is a chance that encrypted authenticated error messages cannot be generated, because the code 
 running in the context of the dApp webpage cannot reach the components capable of encryption. 
 For example, if the computer is offline, the dApp javascript will not be able to communicate 
-with the dApp backend having access to the encryption keys. This is anticipated, so it’s not a bug, 
+with the dApp backend which has access to the encryption keys. This is anticipated, so it’s not a bug, 
 but rather an operational error. Such situation SHOULD be handled on the dApp side,
 instead of passing this error to the extension. The breakdown in the communication between different scripts
 of the extension is also possible, but this rather indicates a real programming error without a good option
