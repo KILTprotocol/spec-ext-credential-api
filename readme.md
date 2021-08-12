@@ -154,9 +154,7 @@ Definitions of data types, if not provided here, can be found in
 [the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/globals.html).
 
 
-### Encryption - TODO
-
-This section is a placeholder for the documentation on how the messages are encrypted.
+### Encryption
 
 Each message sent using the `PubSubSession` is protected using authenticated encryption based on the keypairs of communicating parties.
 This prevents third parties, for example MitM attackers, from reading and/or modifying the contents of the messages,
@@ -165,6 +163,14 @@ as well from injecting their own messages in the session.
 Consequently, the dApp can decode messages from the extension only on the server-side,
 since its private key is only available there. The extension can decode messages from the dApp
 only in its background script, so that its private key remains outside of reach of 3rd parties.
+
+To encrypt the message the sender MUST convert it to JSON and use the `x25519-xsalsa20-poly1305` algorithm 
+with the private key of the sender, the public key of the recipient, and 24 random bytes as a nonce.
+The encrypted message contains the ciphertext, the IDs of the keys used, and the nonce.
+
+To decrypt the message the recipient MUST resolve the key IDs to keys, then use `x25519-xsalsa20-poly1305` 
+with the private key of the recipient, the public key of the sender, and the nonce to restore the JSON from the ciphertext.  
+After parsing this JSON the recipient MUST ensure that the `sender` field contains the DID of the other party.
 
 
 ### Rejections
