@@ -164,7 +164,7 @@ Consequently, the dApp can decode messages from the extension only on the server
 since its private key is only available there. The extension can decode messages from the dApp
 only in its background script, so that its private key remains outside of reach of 3rd parties.
 
-To encrypt the message the sender MUST convert it to JSON and use `x25519-xsalsa20-poly1305` algorithm 
+To encrypt the message the sender MUST convert it to JSON and use the `x25519-xsalsa20-poly1305` algorithm 
 with the private key of the sender, the public key of the recipient, and 24 random bytes as nonce.
 The encrypted message contains the ciphertext, the IDs of the keys used, and the nonce.
 
