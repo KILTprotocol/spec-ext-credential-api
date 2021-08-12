@@ -325,7 +325,7 @@ The attester MUST NOT send this message if the payment happens via the attester 
 This attester MAY send this message if it wants the user to transfer payment in KILT Coins by themselves 
 without interrupting the flow.
 
-Extension MAY start verification workflows after this event.
+The extension MAY start verification workflows after this event.
 
 Upon receiving the `'request-payment'` message the extension SHOULD show the user the interface 
 to authorize the transfer of the payment to the attester.
