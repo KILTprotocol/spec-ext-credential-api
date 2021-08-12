@@ -165,7 +165,7 @@ since its private key is only available there. The extension can decode messages
 only in its background script, so that its private key remains outside of reach of 3rd parties.
 
 To encrypt the message the sender MUST convert it to JSON and use the `x25519-xsalsa20-poly1305` algorithm 
-with the private key of the sender, the public key of the recipient, and 24 random bytes as nonce.
+with the private key of the sender, the public key of the recipient, and 24 random bytes as a nonce.
 The encrypted message contains the ciphertext, the IDs of the keys used, and the nonce.
 
 To decrypt the message the recipient MUST resolve the key IDs to keys, use `x25519-xsalsa20-poly1305` 
