@@ -258,7 +258,7 @@ If the attester requires payment to issue this credential, the `quote` MUST be p
 If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
 
 DApp and extension MAY start verification workflows before this event.
-Extension MAY start verification workflows after this event.
+The extension MAY start verification workflows after this event.
 
 ```typescript
 interface ISubmitTerms {
