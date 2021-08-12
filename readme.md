@@ -176,12 +176,10 @@ only in its background script, so that its private key remains outside of reach 
 
 Rejection messages signal the intentional cancelling of an individual step in the flow.
 
-Rejection messages are generic. What is being rejected is defined by the order of messages: 
-the rejection message rejects the last message the other party (OP) has sent.
-If OP has not yet sent a message, or OP’s last message does not imply a response, 
+Rejection messages are generic. The message field `inReplyTo` contains the `messageId` of the message being rejected. 
+If OP has not sent such a message, or this message does not imply a response, 
 or OP has already received the response, then OP MUST ignore the rejection message.
-With this approach we intend to reduce the complexity (otherwise we would need to have multiple types of messages, 
-to define how they should reference whatever they are rejecting, and how to process messages arriving out of order).
+The parties SHOULD only send a rejection message for the latest message received. 
 
 The interaction is mostly driven from the dApp UI, which also has more screen estate compared to extensions. 
 In the multi-step flow, the user might want to cancel either an individual step or the whole flow. 
