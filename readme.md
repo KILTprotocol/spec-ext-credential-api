@@ -308,7 +308,7 @@ interface IRequestForAttestation {
 }
 ```
 
-DApp MAY start verification workflows after this event.
+The dApp MAY start verification workflows after this event.
 
 However, the attester MUST perform checks that the complete data necessary for actual attestation is in place
 and properly formatted before sending the `'request-payment'` message or requesting the user to pay via other means.
