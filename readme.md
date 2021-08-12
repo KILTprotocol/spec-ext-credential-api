@@ -245,12 +245,6 @@ interface IError {
 
 ### Attestation Workflow
 
-#### 0. Optional: Attester requests prerequisite credentials
-
-One or more instances of the [Verification Workflow](#Verification-Workflow) MAY happen before proposition of the credential
-if the Attester needs to see prerequisite credentials.
-
-
 #### 1. Attester proposes credential
 
 |||
@@ -262,6 +256,9 @@ The processing of the optional field `quote` is currently unspecified.
 
 If the attester requires payment to issue this credential, the `quote` MUST be present.
 If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
+
+DApp and extension MAY start verification workflows before this event.
+The extension MAY start verification workflows after this event.
 
 ```typescript
 interface ISubmitTerms {
@@ -311,9 +308,10 @@ interface IRequestForAttestation {
 }
 ```
 
-Upon receiving the `'request-attestation'` message the attester MUST perform checks that all necessary data is in place
-and properly formatted, so that actual attestation can be started.
-This MUST be done before sending the `'request-payment'` message or requesting the user to pay via other means.
+The dApp MAY start verification workflows after this event.
+
+However, the attester MUST perform checks that the complete data necessary for actual attestation is in place
+and properly formatted before sending the `'request-payment'` message or requesting the user to pay via other means.
 If any of the checks have failed, the attester MUST NOT request the payment via any means.
 
 
@@ -321,11 +319,13 @@ If any of the checks have failed, the attester MUST NOT request the payment via 
 
 This specification does not prescribe the means of payment.
 
-This attester MUST NOT send this message if it does not require payment to issue this credential.
-This attester MUST NOT send this message if the payment happens via the attester website.
+The attester MUST NOT send this message if it does not require payment to issue this credential.
+The attester MUST NOT send this message if the payment happens via the attester website.
 
 This attester MAY send this message if it wants the user to transfer payment in KILT Coins by themselves 
 without interrupting the flow.
+
+The extension MAY start verification workflows after this event.
 
 Upon receiving the `'request-payment'` message the extension SHOULD show the user the interface 
 to authorize the transfer of the payment to the attester.
@@ -362,6 +362,9 @@ interface IPaymentConfirmation {
     
     /** the hash of the payment transaction */
     txHash: Hash
+    
+    /** the hash of the block which includes the payment transaction */
+    blockHash: Hash
 }
 ```
 
@@ -386,6 +389,11 @@ interface IAttestation {
 
 ### Verification Workflow
 
+This workflow MAY be started independently. It also MAY be nested and deeply nested in the middle of ongoing 
+Attestation Workflows and Verification Workflows. The meaning of starting a nested workflow is: 
+"to answer your request (or to continue to the next step in the current workflow) 
+I need an additional credential from you".
+
 Repeat for multiple required credentials.
 
 
@@ -396,14 +404,21 @@ Repeat for multiple required credentials.
 | direction | `dApp <-> extension`|
 | message_type | `'request-credential'` |
 
+Multiple CTypes MAY be requested here only if they can be used interchangeably. For example, if the verifier needs
+credentials for email address and phone number, they need to run one workflow requesting a credential
+for email address (with one or more email address CTypes), and afterwards another requesting a credential for phone number
+(with one or more phone number CTypes).
+
 The `challenge` MUST be used only once. 
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
+
+DApp and extension MAY start verification workflows after this event.
 
 ```typescript
 interface IRequestCredential {
     cTypes: {
         [cTypeId: string]: {
-            trustedAttesters: string[]
+            trustedAttesters?: string[]
             requiredAttributes: string[]
         }
     }
