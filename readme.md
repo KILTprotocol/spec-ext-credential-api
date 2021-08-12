@@ -237,7 +237,7 @@ running in the context of the dApp webpage cannot reach the components capable o
 For example, if the computer is offline, the dApp javascript will not be able to communicate 
 with the dApp backend which has access to the encryption keys. This is anticipated, so it’s not a bug, 
 but rather an operational error. Such situations SHOULD be handled on the dApp side
-instead of passing this error to the extension. The breakdown in the communication between different scripts
+instead of passing this error to the extension. A breakdown in communication between different scripts
 of the extension is also possible, but this rather indicates a real programming error without a good option
 to handle it.
 
