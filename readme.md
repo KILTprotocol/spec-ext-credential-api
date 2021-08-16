@@ -304,7 +304,7 @@ interface Error {
 
 Because of the anticipated multitude of various CTypes, the extension is not expected to provide a UI
 to create and fill in the claims. The role of the extension is to let the user authorize and sign off
-the claims prepared by the attester.
+on the claims prepared by the attester.
 
 The attester SHOULD provide a UI to create and fill in the details of the claim.
 
