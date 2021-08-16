@@ -302,7 +302,7 @@ interface Error {
 | direction | `dApp -> extension` |
 | message_type | `'submit-terms'` |
 
-Because of the anticipated multitude of various CTypes the extension is not expected to provide a UI
+Because of the anticipated multitude of various CTypes, the extension is not expected to provide a UI
 to create and fill in the claims. The role of the extension is to let the user authorize and sign off
 the claims prepared by the attester.
 
