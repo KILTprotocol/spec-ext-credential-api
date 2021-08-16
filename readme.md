@@ -515,7 +515,7 @@ interface RequestCredential {
             /** optional list of DIDs of attesters trusted by this verifier */
             trustedAttesters?: string[]
             
-            /** list of the credential attributes which MUST be included when submitting the credential */
+            /** list of credential attributes which MUST be included when submitting the credential */
             requiredAttributes: string[]
         }
     }
