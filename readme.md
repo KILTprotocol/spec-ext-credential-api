@@ -23,30 +23,67 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### Types
 
-`extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp. `name` SHOULD be a human-readable string.
-
 ```typescript
 interface GlobalKilt {
+    /** `extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp */
     [extensionId: string]: InjectedWindowProvider
 }
 
 interface InjectedWindowProvider {
     startSession: (
+        /** human-readable name of the dApp */
         dAppName: string, 
-        dAppIdentity: IPublicIdentity, 
-        challenge: UUID
+
+        /** DID URI of the dApp */
+        dAppDID: string, 
+
+        /** 24 random bytes as hexadecimal */
+        challenge: string
     ) => Promise<PubSubSession>
+
+    /** human-readable name of the extension */
     name: string
+
+    /** version of the extension */
     version: string
-    specVersion: '0.1.0'
+
+    /** MUST equal the version of this specification the extension adheres to */
+    specVersion: '1.0'
 }
 
 interface PubSubSession {
-    listen: (callback: (message: Message) => Promise<void>) => Promise<void>
+    /** Configure the callback the extension must use to send messages to the dApp. Overrides previous values. */
+    listen: (callback: EncryptedMessageCallback) => Promise<void>
+    
+    /** send the encrypted message to the extension */
+    send: EncryptedMessageCallback
+    
+    /** close the session and stop receiving further messages */
     close: () => Promise<void>
-    send: (message: Message) => Promise<void>
-    identity: IPublicIdentity
+    
+    /** DID URI of the extension */
+    identity: string
+    
+    /** bytes as hexadecimal */
     signedChallenge: string
+}
+
+interface EncryptedMessageCallback {
+    (message: EncryptedMessage): Promise<void>
+}
+
+interface EncryptedMessage {
+    /** DID key ID of the receiver */
+    receiverKeyId: string
+    
+    /** DID key ID of the sender */
+    senderKeyId: string
+
+    /** ciphertext as hexadecimal */
+    ciphertext: string
+    
+    /** 24 bytes nonce as hexadecimal */
+    nonce: string
 }
 ```
 
@@ -59,11 +96,11 @@ The dApp MUST create the `window.kilt` object as early as possible to indicate i
 window.kilt = {}
 ```
 
-The dApp can get all available extensions by iterating over the `window.kilt` object.
+The dApp can afterwards get all available extensions by iterating over the `window.kilt` object.
 
 ```typescript
 function getWindowExtensions(): InjectedWindowProvider[] {
-    return Object.values(window.kilt || {});
+    return Object.values(window.kilt);
 }
 ```
 
@@ -74,11 +111,11 @@ The user selects an extension from this list, and the communication starts from 
 async function startExtensionSession(
     extension: InjectedWindowProvider,
     dAppName: string,
-    dAppIdentity: IPublicIdentity, 
-    challenge: UUID
+    dAppDID: string, 
+    challenge: string
 ): Promise<PubSubSession> {
     try {
-        const session = await extension.startSession(dAppName, dAppIdentity, challenge);
+        const session = await extension.startSession(dAppName, dAppDID, challenge);
         
         // This verification must happen on the server-side.
         Crypto.verify(challenge, session.signedChallenge, session.identity.address);
@@ -102,22 +139,22 @@ to prevent replay attacks.
 The extension MUST only inject itself into pages having the `window.kilt` object.
 
 ```typescript
-(window.kilt as GlobalKilt)[extensionId] = {
+(window.kilt as GlobalKilt).myKiltCredentialsExtension = {
     startSession: async (
         dAppName: string, 
-        dAppIdentity: IPublicIdentity, 
-        challenge: UUID
+        dAppDID: string, 
+        challenge: string
     ): Promise<PubSubSession> => {
         return { /*...*/ };
     },
-    name,
-    version,
-    specVersion: '0.1.0'
+    name: 'My KILT credentials extension',
+    version: '0.0.1',
+    specVersion: '1.0'
 } as InjectedWindowProvider;
 ```
 
 The extension MUST perform the following tasks in `startSession`:
-- follow steps in Well Known DID Configuration to confirm that the `dAppIdentity` is controlled by the same entity
+- follow steps in Well Known DID Configuration to confirm that the `dAppDID` is controlled by the same entity
   as the page origin
 - generate a temporary keypair for encryption of messages of the current session
 - use this keypair to sign the dApp-provided `challenge`
@@ -138,7 +175,7 @@ If they can't handle the received message, they can reject the Promise.
 ### Security concerns while setting up the session
 
 Third-party code tampering with these calls is pointless:
-- modifying the `dAppIdentity` will be detected by Well Known DID Configuration checks
+- modifying the `dAppDID` will be detected by Well Known DID Configuration checks
 - modifying the `challenge` will be detected by the dApp backend
 - replaying responses from other valid identities will result in a `signedChallenge` mismatch
 - pretending to be the extension will fail on the next step:
@@ -212,11 +249,11 @@ The extension MAY use the results of this exchange to indicate to the user its l
 in the trustworthiness of the dApp, for example, as the browsers do for SSL and EV certificates.
 
 ```typescript
-interface IRejection {
-    /** Optional machine-readable type of the rejection */
+interface Rejection {
+    /** optional machine-readable type of the rejection */
     name?: string
     
-    /** Optional human-readable description of the rejection */
+    /** optional human-readable description of the rejection */
     message?: string
 }
 ```
@@ -246,11 +283,11 @@ of the extension is also possible, but this rather indicates a real programming 
 to handle it.
 
 ```typescript
-interface IError {
-    /** Optional machine-readable type of the error */
+interface Error {
+    /** optional machine-readable type of the error */
     name?: string
 
-    /** Optional human-readable description of the error */
+    /** optional human-readable description of the error */
     message?: string
 }
 ```
@@ -265,6 +302,12 @@ interface IError {
 | direction | `dApp -> extension` |
 | message_type | `'submit-terms'` |
 
+Because of the anticipated multitude of various CTypes, the extension is not expected to provide a UI
+to create and fill in the claims. The role of the extension is to let the user authorize and sign off
+on the claims prepared by the attester.
+
+The attester SHOULD provide a UI to create and fill in the details of the claim.
+
 The processing of the optional field `quote` is currently unspecified. 
 
 If the attester requires payment to issue this credential, the `quote` MUST be present.
@@ -274,24 +317,29 @@ DApp and extension MAY start verification workflows before this event.
 The extension MAY start verification workflows after this event.
 
 ```typescript
-interface ISubmitTerms {
-    cType: string
-    claim: Partial<IClaim>
-    delegationId?: IDelegationBaseNode['id']
-    legitimations?: IAttestedClaim[]
-    quote?: IQuoteAttesterSigned
-}
+interface SubmitTerms {
+    /** CType of the proposed credential 
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/ictype.html */
+    cType: ICType
 
-const exampleTerms: ISubmitTerms = {
-    "cType": "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-    "claim": {
-        "cTypeHash": "0xd8ad043d91d8fdbc382ee0ce33dc96af4ee62ab2d20f7980c49d3e577d80e5f5",
-        "contents": {
-            "grade": 12,
-            "passed": true
-        }
-    },
-    "delegationId": "4tEpuncfo6HYdkH8LKg4KJWYSB3mincgdX19VHivk9cxSz3F"
+    claim: {
+        /** hash of the CType */
+        cTypeHash: string
+        
+        /** contents of the proposed credential */
+        contents: object
+    }
+
+    /** optional attester-signed binding 
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/iquote.iquoteattestersigned.html */
+    quote?: IQuoteAttesterSigned
+    
+    /** optional ID of the DelegationNode of the attester */
+    delegationId?: string
+    
+    /** optional array of credentials of the attester
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html */
+    legitimations?: IAttestedClaim[]
 }
 ```
 
@@ -299,6 +347,7 @@ const exampleTerms: ISubmitTerms = {
 #### 2. Extension requests credential
 
 The extension MUST only send the request with active consent of the user.
+This is the first step where the user’s DID is revealed to the dApp.
 
 If the `quote` was provided, and the user has entered the password to decrypt the private key for signing the request,
 the extension SHOULD temporarily cache either the password or the unencrypted private key, 
@@ -310,14 +359,37 @@ so that the user does not need to enter it again when the payment needs to be tr
 | message_type | `'request-attestation'` |
 
 ```typescript
-interface IRequestForAttestation {
-    claim: IClaim
-    claimNonceMap: Record<Hash, string>
-    claimHashes: Hash[]
-    claimerSignature: string
-    delegationId?: IDelegationBaseNode['id']
+interface RequestForAttestation {
+    claim: {
+        /** hash of the CType */
+        cTypeHash: string
+        
+        /** contents of the proposed credential */
+        contents: object
+        
+        /** DID URI to issue the credential for */
+        owner: string
+    }
+    
+    /** mapping of hashes to nonces */
+    claimNonceMap: Record<string, string>
+    
+    /** list of hashes */
+    claimHashes: string[]
+    
+    /** optional ID of the DelegationNode of the attester to be used in the attestation */
+    delegationId?: string
+
+    /** optional array of credentials of the attester to include in the attestation 
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html */
     legitimations: IAttestedClaim[]
-    rootHash: Hash
+    
+    /** signature of the data above using the user’s DID
+     *  TODO: @link */
+    claimerSignature: DidSignature
+    
+    /** root hash of the data above */
+    rootHash: string
 }
 ```
 
@@ -351,9 +423,9 @@ and the recipient address (`attesterAddress`).
 | message_type | `'request-payment'` |
 
 ```typescript
-interface IRequestForPayment {
+interface RequestForPayment {
     /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: Hash
+    claimHash: string
 }
 ```
 
@@ -369,15 +441,15 @@ to the attester by sending the `'confirm-payment'` message.
 | message_type | `'confirm-payment'` |
 
 ```typescript
-interface IPaymentConfirmation {
+interface PaymentConfirmation {
     /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: Hash
+    claimHash: string
     
     /** the hash of the payment transaction */
-    txHash: Hash
+    txHash: string
     
     /** the hash of the block which includes the payment transaction */
-    blockHash: Hash
+    blockHash: string
 }
 ```
 
@@ -390,12 +462,21 @@ interface IPaymentConfirmation {
 | message_type | `'submit-attestation'` |
 
 ```typescript
-interface IAttestation {
-    claimHash: Hash
-    cTypeHash: ICType['hash']
-    owner: IPublicIdentity['address']
-    delegationId?: IDelegationBaseNode['id']
-    revoked: boolean
+interface Attestation {
+    /** same as the `rootHash` value of the `'request-attestation'` message */
+    claimHash: string
+    
+    /** hash of the CType*/
+    cTypeHash: string
+
+    /** DID URI the credential was issued for */
+    owner: string
+
+    /** optional ID of the DelegationNode of the attester */
+    delegationId?: string
+    
+    /** it is expected that the freshly issued credential is not yet revoked */
+    revoked: false
 }
 ```
 
@@ -414,7 +495,7 @@ Repeat for multiple required credentials.
 
 |||
 |-|-|
-| direction | `dApp <-> extension`|
+| direction | `dApp <-> extension` |
 | message_type | `'request-credential'` |
 
 Multiple CTypes MAY be requested here only if they can be used interchangeably. For example, if the verifier needs
@@ -428,17 +509,22 @@ The dApp MUST store a copy of the `challenge` on the server-side to prevent tamp
 DApp and extension MAY start verification workflows after this event.
 
 ```typescript
-interface IRequestCredential {
+interface RequestCredential {
     cTypes: {
         [cTypeId: string]: {
+            /** optional list of DIDs of attesters trusted by this verifier */
             trustedAttesters?: string[]
+            
+            /** list of credential attributes which MUST be included when submitting the credential */
             requiredAttributes: string[]
         }
     }
-    challenge: UUID
+
+    /** 24 random bytes as hexadecimal */
+    challenge: string
 }   
 
-const exampleRequest: IRequestCredential = {
+const exampleRequest: RequestCredential = {
     "cTypes": {
         "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b": {
             "trustedAttesters": [
@@ -449,29 +535,32 @@ const exampleRequest: IRequestCredential = {
             ]
         }
     },
-    "challenge": "f7546f31-bd3a-464c-bb43-9d622968c3a4"
+    "challenge": "9f1ceac971cce4c61505974f411a9db432949531abe10dde"
 }
 ```
 
 #### 2. Extension or dApp sends credential
 
 The extension MUST only send the credential with active consent of the user.
-The `challenge` from the previous message MUST be signed using the private key 
-of the identity which owns the credential. This prevents replay attacks 
-by confirming the ownership of this identity.
+This is the first step where the user’s DID is revealed to the dApp.
 
-The dApp MUST verify in the backend that the signature of `signedChallenge`
-returned by the extension matches its identity to prevent replay attacks.
+The `challenge` from the previous message MUST be used to update the `claimerSignature` 
+with the private key of the identity which owns the credential. 
+This prevents replay attacks by confirming the ownership of this identity.
+
+The dApp MUST verify in the backend that the `claimerSignature` returned by the extension 
+matches its identity and the `challenge`.
 
 |||
 |-|-|
 | direction | `extension <-> dApp` |
-| message_type | `'submit-credential'`|
+| message_type | `'submit-credential'` |
 
 ```typescript
-interface ISubmitCredential {
+interface SubmitCredential {
+    /** credential itself with the `claimerSignature` updated for the `challenge` the verifier provided
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html  */
     credential: IAttestedClaim
-    signedChallenge: string
 }
 ```
 
