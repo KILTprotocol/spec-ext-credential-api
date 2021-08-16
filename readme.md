@@ -380,7 +380,7 @@ interface RequestForAttestation {
     /** optional ID of the DelegationNode of the attester to be used in the attestation */
     delegationId?: string
 
-    /** optional array of credentials of the attester to include into the attestation 
+    /** optional array of credentials of the attester to include in the attestation 
      *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html */
     legitimations: IAttestedClaim[]
     
