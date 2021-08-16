@@ -306,7 +306,7 @@ Because of the anticipated multitude of various CTypes, the extension is not exp
 to create and fill in the claims. The role of the extension is to let the user authorize and sign off
 the claims prepared by the attester.
 
-The attester SHOULD provide a UI to create and fill in the details in the claim.
+The attester SHOULD provide a UI to create and fill in the details of the claim.
 
 The processing of the optional field `quote` is currently unspecified. 
 
