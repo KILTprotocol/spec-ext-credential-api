@@ -61,11 +61,14 @@ interface PubSubSession {
     /** close the session and stop receiving further messages */
     close: () => Promise<void>
     
-    /** DID URI of the extension */
+    /** temporary DID URI the extension will use to encrypt the session messages */
     identity: string
     
     /** bytes as hexadecimal */
-    signedChallenge: string
+    encryptedChallenge: string
+    
+    /** 24 bytes nonce as hexadecimal */
+    nonce: string
 }
 
 interface EncryptedMessageCallback {
@@ -117,8 +120,10 @@ async function startExtensionSession(
     try {
         const session = await extension.startSession(dAppName, dAppDID, challenge);
         
+        // Resolve the session.identity DID and use its public key, own private key, and the nonce 
+        // to decrypt `session.encryptedChallenge` and confirm that it equals to the original challenge.
         // This verification must happen on the server-side.
-        Crypto.verify(challenge, session.signedChallenge, session.identity.address);
+        Crypto.verify(challenge, session.encryptedChallenge, session.identity);
         
         return session;
     } catch (error) {
@@ -130,8 +135,8 @@ async function startExtensionSession(
 
 The `challenge` MUST be used only once. 
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
-The dApp MUST verify that the signature of `signedChallenge` returned by the extension matches its identity 
-to prevent replay attacks.
+The dApp MUST decrypt the `encryptedChallenge` returned by the extension and ensure that
+it matches the original challenge to prevent replay attacks.
 
 
 ### Extension injects its API into a webpage
@@ -156,8 +161,10 @@ The extension MUST only inject itself into pages having the `window.kilt` object
 The extension MUST perform the following tasks in `startSession`:
 - follow steps in Well Known DID Configuration to confirm that the `dAppDID` is controlled by the same entity
   as the page origin
-- generate a temporary keypair for encryption of messages of the current session
-- use this keypair to sign the dApp-provided `challenge`
+- generate a temporary DID and a keypair for encryption of messages of the current session
+- generate a nonce of 24 random bytes
+- use the temporary keypair, the dApp public key, and the nonce to encrypt the dApp-provided `challenge` 
+  with `x25519-xsalsa20-poly1305`
 
 The extension SHOULD perform the following tasks in `startSession`:
 - ensure that the user has previously authorized interaction with the provided DID
@@ -177,7 +184,7 @@ If they can't handle the received message, they can reject the Promise.
 Third-party code tampering with these calls is pointless:
 - modifying the `dAppDID` will be detected by Well Known DID Configuration checks
 - modifying the `challenge` will be detected by the dApp backend
-- replaying responses from other valid identities will result in a `signedChallenge` mismatch
+- replaying responses from other valid identities will result in a `encryptedChallenge` mismatch
 - pretending to be the extension will fail on the next step:
   MitM will not be able to encrypt the message sent to the extension with the authentication 
   of a DID that matches the origin. 
