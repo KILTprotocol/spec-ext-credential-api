@@ -120,10 +120,9 @@ async function startExtensionSession(
     try {
         const session = await extension.startSession(dAppName, dAppDID, challenge);
         
-        // Resolve the session.identity DID and use its public key, own private key, and the nonce 
+        // Resolve the `session.identity` DID and use its public key, own private key, and the nonce 
         // to decrypt `session.encryptedChallenge` and confirm that it equals to the original challenge.
         // This verification must happen on the server-side.
-        Crypto.verify(challenge, session.encryptedChallenge, session.identity);
         
         return session;
     } catch (error) {
