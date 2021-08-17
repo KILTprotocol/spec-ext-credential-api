@@ -174,8 +174,8 @@ The extension SHOULD perform the following tasks in `startSession`:
 
 Messages SHOULD be queued until the dApp calls `listen`.
 
-The Promise SHOULD be resolved after the dApp or extension has finished processing the message.
-If they can't handle the received message, they can reject the Promise.
+The promise SHOULD be resolved after the dApp or extension has finished processing the message.
+A response message SHOULD only be sent after the promise is resolved. 
 
 
 ### Security concerns while setting up the session
@@ -277,7 +277,8 @@ or when constructing a response message.
 
 If an error happened while setting up the communication session, the session SHOULD be aborted or restarted.
 After the session has started, errors SHOULD NOT be thrown, only sent as messages to guarantee authenticity.
-So the call of `send()` SHOULD NOT throw errors. The same applies to the `callback` provided to the `listen()` call.
+So the call of `send()` SHOULD NOT throw errors and SHOULD NOT reject the promise it has returned. 
+The same applies to the `callback` provided to the `listen()` call.
 
 There is a chance that encrypted authenticated error messages cannot be generated, because the code 
 running in the context of the dApp webpage cannot reach the components capable of encryption. 
