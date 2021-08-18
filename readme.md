@@ -197,6 +197,40 @@ Definitions of data types, if not provided here, can be found in
 [the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/globals.html).
 
 
+### Metadata
+
+```typescript
+interface Message {
+    body: {
+        /** type of the message, referred as `message_type` below */
+        type: string
+
+        /** message data */
+        content: object
+    }
+
+    /** timestamp of the message construction, number of milliseconds elapsed since the UNIX epoch */
+    createdAt: number
+
+    /** DID URI of the sender */
+    sender: string
+
+    /** DID URI of the receiver */
+    receiver: string
+
+    /** message ID, a random string  */
+    messageId: string
+
+    /** ID of the message this message responds to */
+    inReplyTo?: string
+
+    /** when this message B is a response to the message A, 
+     *  B.references = [...A.references, A.inReplyTo] */
+    references?: string[]
+}
+```
+
+
 ### Encryption
 
 Each message sent using the `PubSubSession` is protected using authenticated encryption based on the keypairs of communicating parties.
@@ -452,10 +486,10 @@ interface PaymentConfirmation {
     /** same as the `rootHash` value of the `'request-attestation'` message */
     claimHash: string
     
-    /** the hash of the payment transaction */
+    /** hash of the payment transaction */
     txHash: string
     
-    /** the hash of the block which includes the payment transaction */
+    /** hash of the block which includes the payment transaction */
     blockHash: string
 }
 ```
