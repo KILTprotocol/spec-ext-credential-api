@@ -330,8 +330,8 @@ interface SubmitTerms {
     cType: ICType
 
     claim: {
-        /** hash of the CType */
-        cTypeHash: string
+        /** ID of the CType */
+        cTypeId: string
         
         /** contents of the proposed credential */
         contents: object
@@ -368,8 +368,8 @@ so that the user does not need to enter it again when the payment needs to be tr
 ```typescript
 interface RequestForAttestation {
     claim: {
-        /** hash of the CType */
-        cTypeHash: string
+        /** ID of the CType */
+        cTypeId: string
         
         /** contents of the proposed credential */
         contents: object
@@ -473,8 +473,8 @@ interface Attestation {
     /** same as the `rootHash` value of the `'request-attestation'` message */
     claimHash: string
     
-    /** hash of the CType*/
-    cTypeHash: string
+    /** ID of the CType*/
+    cTypeId: string
 
     /** DID URI the credential was issued for */
     owner: string
