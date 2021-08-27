@@ -166,6 +166,7 @@ The extension MUST perform the following tasks in `startSession`:
   with `x25519-xsalsa20-poly1305`
 
 The extension SHOULD perform the following tasks in `startSession`:
+- protect against Denial-of-Service attacks where the dApp floods the extension with requests
 - ensure that the user has previously authorized interaction with the provided DID
 - otherwise, request user authorization for this interaction
 
