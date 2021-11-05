@@ -381,8 +381,8 @@ interface SubmitTerms {
     delegationId?: string
     
     /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html */
-    legitimations?: IAttestedClaim[]
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
+    legitimations?: ICredential[]
 }
 ```
 
@@ -424,8 +424,8 @@ interface RequestForAttestation {
     delegationId?: string
 
     /** optional array of credentials of the attester to include in the attestation 
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html */
-    legitimations: IAttestedClaim[]
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
+    legitimations: ICredential[]
     
     /** signature of the data above using the user’s DID
      *  TODO: @link */
@@ -606,8 +606,8 @@ matches its identity and the `challenge`.
 ```typescript
 interface SubmitCredential {
     /** credential itself with the `claimerSignature` updated for the `challenge` the verifier provided
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html  */
-    credential: IAttestedClaim
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html  */
+    credential: ICredential
 }
 ```
 
