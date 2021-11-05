@@ -561,7 +561,7 @@ interface RequestCredential {
             trustedAttesters?: string[]
             
             /** list of credential attributes which MUST be included when submitting the credential */
-            requiredAttributes: string[]
+            requiredProperties: string[]
         }
     ]
 
@@ -576,7 +576,7 @@ const exampleRequest: RequestCredential = {
             "trustedAttesters": [
                 "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
             ],
-            "requiredAttributes": [
+            "requiredProperties": [
                 "name"
             ]
         }
