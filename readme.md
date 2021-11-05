@@ -402,37 +402,41 @@ so that the user does not need to enter it again when the payment needs to be tr
 | message_type | `'request-attestation'` |
 
 ```typescript
-interface RequestForAttestation {
-    claim: {
-        /** ID of the CType */
-        cTypeId: string
+interface RequestAttestation {
+    requestForAttestation: {
+        claim: {
+            /** ID of the CType */
+            cTypeId: string
+            
+            /** contents of the proposed credential */
+            contents: object
+            
+            /** DID URI to issue the credential for */
+            owner: string
+        }
         
-        /** contents of the proposed credential */
-        contents: object
+        /** mapping of hashes to nonces */
+        claimNonceMap: Record<string, string>
         
-        /** DID URI to issue the credential for */
-        owner: string
-    }
-    
-    /** mapping of hashes to nonces */
-    claimNonceMap: Record<string, string>
-    
-    /** list of hashes */
-    claimHashes: string[]
-    
-    /** optional ID of the DelegationNode of the attester to be used in the attestation */
-    delegationId?: string
+        /** list of hashes */
+        claimHashes: string[]
+        
+        /** optional ID of the DelegationNode of the attester to be used in the attestation */
+        delegationId?: string
 
-    /** optional array of credentials of the attester to include in the attestation 
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
-    legitimations: ICredential[]
-    
-    /** signature of the data above using the user’s DID
-     *  TODO: @link */
-    claimerSignature: DidSignature
-    
-    /** root hash of the data above */
-    rootHash: string
+        /** optional array of credentials of the attester to include in the attestation 
+        *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
+        legitimations: ICredential[]
+        
+        /** signature of the data above using the user’s DID
+        *  TODO: @link */
+        claimerSignature: DidSignature
+        
+        /** root hash of the data above */
+        rootHash: string
+    },
+    /** quote agreement signed by the claimer */
+    quote?: IQuoteAgreement
 }
 ```
 
