@@ -360,9 +360,10 @@ The extension MAY start verification workflows after this event.
 
 ```typescript
 interface SubmitTerms {
-    /** CType of the proposed credential 
+    /** CTypes for the proposed credential.
+     * In most cases this will be just one, but in the case of nested ctypes, this can be multiple.
      *  @link https://kiltprotocol.github.io/sdk-js/modules/ictype.html */
-    cType: ICType
+    cTypes: ICType[]
 
     claim: {
         /** ID of the CType */
