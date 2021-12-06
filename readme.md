@@ -360,9 +360,10 @@ The extension MAY start verification workflows after this event.
 
 ```typescript
 interface SubmitTerms {
-    /** CType of the proposed credential 
+    /** CTypes for the proposed credential.
+     * In most cases this will be just one, but in the case of nested ctypes, this can be multiple.
      *  @link https://kiltprotocol.github.io/sdk-js/modules/ictype.html */
-    cType: ICType
+    cTypes: ICType[]
 
     claim: {
         /** ID of the CType */
@@ -380,8 +381,8 @@ interface SubmitTerms {
     delegationId?: string
     
     /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html */
-    legitimations?: IAttestedClaim[]
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
+    legitimations?: ICredential[]
 }
 ```
 
@@ -401,37 +402,41 @@ so that the user does not need to enter it again when the payment needs to be tr
 | message_type | `'request-attestation'` |
 
 ```typescript
-interface RequestForAttestation {
-    claim: {
-        /** ID of the CType */
-        cTypeId: string
+interface RequestAttestation {
+    requestForAttestation: {
+        claim: {
+            /** ID of the CType */
+            cTypeId: string
+            
+            /** contents of the proposed credential */
+            contents: object
+            
+            /** DID URI to issue the credential for */
+            owner: string
+        }
         
-        /** contents of the proposed credential */
-        contents: object
+        /** mapping of hashes to nonces */
+        claimNonceMap: Record<string, string>
         
-        /** DID URI to issue the credential for */
-        owner: string
-    }
-    
-    /** mapping of hashes to nonces */
-    claimNonceMap: Record<string, string>
-    
-    /** list of hashes */
-    claimHashes: string[]
-    
-    /** optional ID of the DelegationNode of the attester to be used in the attestation */
-    delegationId?: string
+        /** list of hashes */
+        claimHashes: string[]
+        
+        /** optional ID of the DelegationNode of the attester to be used in the attestation */
+        delegationId?: string
 
-    /** optional array of credentials of the attester to include in the attestation 
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html */
-    legitimations: IAttestedClaim[]
-    
-    /** signature of the data above using the user’s DID
-     *  TODO: @link */
-    claimerSignature: DidSignature
-    
-    /** root hash of the data above */
-    rootHash: string
+        /** optional array of credentials of the attester to include in the attestation 
+        *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
+        legitimations: ICredential[]
+        
+        /** signature of the data above using the user’s DID
+        *  TODO: @link */
+        claimerSignature: DidSignature
+        
+        /** root hash of the data above */
+        rootHash: string
+    },
+    /** quote agreement signed by the claimer */
+    quote?: IQuoteAgreement
 }
 ```
 
@@ -552,31 +557,35 @@ DApp and extension MAY start verification workflows after this event.
 
 ```typescript
 interface RequestCredential {
-    cTypes: {
-        [cTypeId: string]: {
+    cTypes: [
+        {
+            /** The hash of the CType */
+            cTypeHash: string
+
             /** optional list of DIDs of attesters trusted by this verifier */
             trustedAttesters?: string[]
             
             /** list of credential attributes which MUST be included when submitting the credential */
-            requiredAttributes: string[]
+            requiredProperties: string[]
         }
-    }
+    ]
 
     /** 24 random bytes as hexadecimal */
     challenge: string
 }   
 
 const exampleRequest: RequestCredential = {
-    "cTypes": {
-        "kilt:ctype:0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b": {
+    "cTypes": [
+        {
+            "cTypeHash": "0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
             "trustedAttesters": [
                 "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
             ],
-            "requiredAttributes": [
+            "requiredProperties": [
                 "name"
             ]
         }
-    },
+    ],
     "challenge": "9f1ceac971cce4c61505974f411a9db432949531abe10dde"
 }
 ```
@@ -601,8 +610,8 @@ matches its identity and the `challenge`.
 ```typescript
 interface SubmitCredential {
     /** credential itself with the `claimerSignature` updated for the `challenge` the verifier provided
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/iattestedclaim.html  */
-    credential: IAttestedClaim
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html  */
+    credential: ICredential
 }
 ```
 
