@@ -34,8 +34,8 @@ interface InjectedWindowProvider {
         /** human-readable name of the dApp */
         dAppName: string, 
 
-        /** DID URI of the dApp */
-        dAppDID: string, 
+        /** ID of the key agreement key of the dApp DID to be used to encrypt the session messages */
+        dAppEncryptionKeyId: string, 
 
         /** 24 random bytes as hexadecimal */
         challenge: string
@@ -61,8 +61,8 @@ interface PubSubSession {
     /** close the session and stop receiving further messages */
     close: () => Promise<void>
     
-    /** temporary DID URI the extension will use to encrypt the session messages */
-    identity: string
+    /** ID of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
+    encryptionKeyId: string
     
     /** bytes as hexadecimal */
     encryptedChallenge: string
@@ -114,13 +114,13 @@ The user selects an extension from this list, and the communication starts from 
 async function startExtensionSession(
     extension: InjectedWindowProvider,
     dAppName: string,
-    dAppDID: string, 
+    dAppEncryptionKeyId: string, 
     challenge: string
 ): Promise<PubSubSession> {
     try {
-        const session = await extension.startSession(dAppName, dAppDID, challenge);
+        const session = await extension.startSession(dAppName, dAppEncryptionKeyId, challenge);
         
-        // Resolve the `session.identity` DID and use its public key, own private key, and the nonce 
+        // Resolve the `session.encryptionKeyId` and use this key and the nonce 
         // to decrypt `session.encryptedChallenge` and confirm that it’s equal to the original challenge.
         // This verification must happen on the server-side.
         
@@ -146,7 +146,7 @@ The extension MUST only inject itself into pages having the `window.kilt` object
 (window.kilt as GlobalKilt).myKiltCredentialsExtension = {
     startSession: async (
         dAppName: string, 
-        dAppDID: string, 
+        dAppEncryptionKeyId: string, 
         challenge: string
     ): Promise<PubSubSession> => {
         return { /*...*/ };
@@ -158,7 +158,7 @@ The extension MUST only inject itself into pages having the `window.kilt` object
 ```
 
 The extension MUST perform the following tasks in `startSession`:
-- follow steps in Well Known DID Configuration to confirm that the `dAppDID` is controlled by the same entity
+- follow steps in Well Known DID Configuration to confirm that the DID of the `dAppEncryptionKeyId` is controlled by the same entity
   as the page origin
 - generate a temporary DID and a keypair for encryption of messages of the current session
 - generate a nonce of 24 random bytes
@@ -182,7 +182,7 @@ A response message SHOULD only be sent after the promise is resolved.
 ### Security concerns while setting up the session
 
 Third-party code tampering with these calls is pointless:
-- modifying the `dAppDID` will be detected by Well Known DID Configuration checks
+- modifying the `dAppEncryptionKeyId` will be detected by Well Known DID Configuration checks
 - modifying the `challenge` will be detected by the dApp backend
 - replaying responses from other valid identities will result in a `encryptedChallenge` mismatch
 - pretending to be the extension will fail on the next step:
