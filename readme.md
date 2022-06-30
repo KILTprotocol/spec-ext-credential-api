@@ -78,7 +78,7 @@ interface EncryptedMessageCallback {
 }
 
 interface EncryptedMessage {
-    /** DID key URI of the receiver */
+    /** URI of the key agreement key of the receiver DID used to encrypt the message */
     receiverKeyUri: string
     
     /** DID key URI of the sender */
