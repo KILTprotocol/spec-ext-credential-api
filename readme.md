@@ -81,7 +81,7 @@ interface EncryptedMessage {
     /** URI of the key agreement key of the receiver DID used to encrypt the message */
     receiverKeyUri: string
     
-    /** DID key URI of the sender */
+    /** URI of the key agreement key of the sender DID used to encrypt the message */
     senderKeyUri: string
 
     /** ciphertext as hexadecimal */
