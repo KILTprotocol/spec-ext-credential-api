@@ -36,8 +36,8 @@ interface InjectedWindowProvider {
         /** human-readable name of the dApp */
         dAppName: string, 
 
-        /** ID of the key agreement key of the dApp DID to be used to encrypt the session messages */
-        dAppEncryptionKeyId: string, 
+        /** URI of the key agreement key of the dApp DID to be used to encrypt the session messages */
+        dAppEncryptionKeyUri: DidResourceUri, 
 
         /** 24 random bytes as hexadecimal */
         challenge: string
@@ -63,8 +63,8 @@ interface PubSubSession {
     /** close the session and stop receiving further messages */
     close: () => Promise<void>
     
-    /** ID of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
-    encryptionKeyId: string
+    /** URI of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
+    encryptionKeyUri: DidResourceUri
     
     /** bytes as hexadecimal */
     encryptedChallenge: string
@@ -78,11 +78,11 @@ interface EncryptedMessageCallback {
 }
 
 interface EncryptedMessage {
-    /** DID key ID of the receiver */
-    receiverKeyId: string
+    /** DID key URI of the receiver */
+    receiverKeyUri: DidResourceUri
     
-    /** DID key ID of the sender */
-    senderKeyId: string
+    /** DID key URI of the sender */
+    senderKeyUri: DidResourceUri
 
     /** ciphertext as hexadecimal */
     ciphertext: string
@@ -90,6 +90,10 @@ interface EncryptedMessage {
     /** 24 bytes nonce as hexadecimal */
     nonce: string
 }
+
+type DidUri = `did:${string}:${string}`
+
+type DidResourceUri = `${DidUri}#${string}`;
 ```
 
 
@@ -116,13 +120,13 @@ The user selects an extension from this list, and the communication starts from 
 async function startExtensionSession(
     extension: InjectedWindowProvider,
     dAppName: string,
-    dAppEncryptionKeyId: string, 
+    dAppEncryptionKeyUri: DidResourceUri, 
     challenge: string
 ): Promise<PubSubSession> {
     try {
-        const session = await extension.startSession(dAppName, dAppEncryptionKeyId, challenge);
+        const session = await extension.startSession(dAppName, dAppEncryptionKeyUri, challenge);
         
-        // Resolve the `session.encryptionKeyId` and use this key and the nonce 
+        // Resolve the `session.encryptionKeyUri` and use this key and the nonce 
         // to decrypt `session.encryptedChallenge` and confirm that it’s equal to the original challenge.
         // This verification must happen on the server-side.
         
@@ -148,7 +152,7 @@ The extension MUST only inject itself into pages having the `window.kilt` object
 (window.kilt as GlobalKilt).myKiltCredentialsExtension = {
     startSession: async (
         dAppName: string, 
-        dAppEncryptionKeyId: string, 
+        dAppEncryptionKeyUri: DidResourceUri, 
         challenge: string
     ): Promise<PubSubSession> => {
         return { /*...*/ };
@@ -160,7 +164,7 @@ The extension MUST only inject itself into pages having the `window.kilt` object
 ```
 
 The extension MUST perform the following tasks in `startSession`:
-- follow steps in Well Known DID Configuration to confirm that the DID of the `dAppEncryptionKeyId` is controlled by the same entity
+- follow steps in Well Known DID Configuration to confirm that the DID of the `dAppEncryptionKeyUri` is controlled by the same entity
   as the page origin
 - generate a temporary DID and a keypair for encryption of messages of the current session
 - generate a nonce of 24 random bytes
@@ -184,7 +188,7 @@ A response message SHOULD only be sent after the promise is resolved.
 ### Security concerns while setting up the session
 
 Third-party code tampering with these calls is pointless:
-- modifying the `dAppEncryptionKeyId` will be detected by Well Known DID Configuration checks
+- modifying the `dAppEncryptionKeyUri` will be detected by Well Known DID Configuration checks
 - modifying the `challenge` will be detected by the dApp backend
 - replaying responses from other valid identities will result in a `encryptedChallenge` mismatch
 - pretending to be the extension will fail on the next step:
@@ -216,10 +220,10 @@ interface Message {
     createdAt: number
 
     /** DID URI of the sender */
-    sender: string
+    sender: DidUri
 
     /** DID URI of the receiver */
-    receiver: string
+    receiver: DidUri
 
     /** message ID, a random string  */
     messageId: string
@@ -414,7 +418,7 @@ interface RequestAttestation {
             contents: object
             
             /** DID URI to issue the credential for */
-            owner: string
+            owner: DidUri
         }
         
         /** mapping of hashes to nonces */
@@ -519,7 +523,7 @@ interface Attestation {
     cTypeId: string
 
     /** DID URI the credential was issued for */
-    owner: string
+    owner: DidUri
 
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
@@ -565,7 +569,7 @@ interface RequestCredential {
             cTypeHash: string
 
             /** optional list of DIDs of attesters trusted by this verifier */
-            trustedAttesters?: string[]
+            trustedAttesters?: DidUri[]
             
             /** list of credential attributes which MUST be included when submitting the credential */
             requiredProperties: string[]
