@@ -37,7 +37,7 @@ interface InjectedWindowProvider {
         dAppName: string, 
 
         /** URI of the key agreement key of the dApp DID to be used to encrypt the session messages */
-        dAppEncryptionKeyUri: DidResourceUri, 
+        dAppEncryptionKeyUri: string, 
 
         /** 24 random bytes as hexadecimal */
         challenge: string
@@ -64,7 +64,7 @@ interface PubSubSession {
     close: () => Promise<void>
     
     /** URI of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
-    encryptionKeyUri: DidResourceUri
+    encryptionKeyUri: string
     
     /** bytes as hexadecimal */
     encryptedChallenge: string
@@ -79,10 +79,10 @@ interface EncryptedMessageCallback {
 
 interface EncryptedMessage {
     /** DID key URI of the receiver */
-    receiverKeyUri: DidResourceUri
+    receiverKeyUri: string
     
     /** DID key URI of the sender */
-    senderKeyUri: DidResourceUri
+    senderKeyUri: string
 
     /** ciphertext as hexadecimal */
     ciphertext: string
@@ -90,10 +90,6 @@ interface EncryptedMessage {
     /** 24 bytes nonce as hexadecimal */
     nonce: string
 }
-
-type DidUri = `did:${string}:${string}`
-
-type DidResourceUri = `${DidUri}#${string}`;
 ```
 
 
@@ -120,7 +116,7 @@ The user selects an extension from this list, and the communication starts from 
 async function startExtensionSession(
     extension: InjectedWindowProvider,
     dAppName: string,
-    dAppEncryptionKeyUri: DidResourceUri, 
+    dAppEncryptionKeyUri: string, 
     challenge: string
 ): Promise<PubSubSession> {
     try {
@@ -152,7 +148,7 @@ The extension MUST only inject itself into pages having the `window.kilt` object
 (window.kilt as GlobalKilt).myKiltCredentialsExtension = {
     startSession: async (
         dAppName: string, 
-        dAppEncryptionKeyUri: DidResourceUri, 
+        dAppEncryptionKeyUri: string, 
         challenge: string
     ): Promise<PubSubSession> => {
         return { /*...*/ };
@@ -220,10 +216,10 @@ interface Message {
     createdAt: number
 
     /** DID URI of the sender */
-    sender: DidUri
+    sender: string
 
     /** DID URI of the receiver */
-    receiver: DidUri
+    receiver: string
 
     /** message ID, a random string  */
     messageId: string
@@ -418,7 +414,7 @@ interface RequestAttestation {
             contents: object
             
             /** DID URI to issue the credential for */
-            owner: DidUri
+            owner: string
         }
         
         /** mapping of hashes to nonces */
@@ -523,7 +519,7 @@ interface Attestation {
     cTypeId: string
 
     /** DID URI the credential was issued for */
-    owner: DidUri
+    owner: string
 
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
@@ -569,7 +565,7 @@ interface RequestCredential {
             cTypeHash: string
 
             /** optional list of DIDs of attesters trusted by this verifier */
-            trustedAttesters?: DidUri[]
+            trustedAttesters?: string[]
             
             /** list of credential attributes which MUST be included when submitting the credential */
             requiredProperties: string[]
