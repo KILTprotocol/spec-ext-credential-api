@@ -63,8 +63,8 @@ interface PubSubSession {
     /** close the session and stop receiving further messages */
     close: () => Promise<void>
     
-    /** URI of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
-    encryptionKeyUri: string
+    /** ID of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
+    encryptionKeyId: string
     
     /** bytes as hexadecimal */
     encryptedChallenge: string
@@ -78,11 +78,11 @@ interface EncryptedMessageCallback {
 }
 
 interface EncryptedMessage {
-    /** URI of the key agreement key of the receiver DID used to encrypt the message */
-    receiverKeyUri: string
+    /** ID of the key agreement key of the receiver DID used to encrypt the message */
+    receiverKeyId: string
     
-    /** URI of the key agreement key of the sender DID used to encrypt the message */
-    senderKeyUri: string
+    /** ID of the key agreement key of the sender DID used to encrypt the message */
+    senderKeyId: string
 
     /** ciphertext as hexadecimal */
     ciphertext: string
@@ -122,7 +122,7 @@ async function startExtensionSession(
     try {
         const session = await extension.startSession(dAppName, dAppEncryptionKeyUri, challenge);
         
-        // Resolve the `session.encryptionKeyUri` and use this key and the nonce 
+        // Resolve the `session.encryptionKeyId` and use this key and the nonce 
         // to decrypt `session.encryptedChallenge` and confirm that it’s equal to the original challenge.
         // This verification must happen on the server-side.
         
