@@ -1,4 +1,4 @@
-# KILT Credential API (Draft Spec version 1.0)
+# KILT Credential API (Draft Spec version 2.0)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
@@ -50,7 +50,7 @@ interface InjectedWindowProvider {
     version: string
 
     /** MUST equal the version of this specification the extension adheres to */
-    specVersion: '1.0'
+    specVersion: '2.0'
 }
 
 interface PubSubSession {
@@ -63,8 +63,8 @@ interface PubSubSession {
     /** close the session and stop receiving further messages */
     close: () => Promise<void>
     
-    /** ID of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
-    encryptionKeyId: string
+    /** URI of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
+    encryptionKeyUri: string
     
     /** bytes as hexadecimal */
     encryptedChallenge: string
@@ -78,11 +78,11 @@ interface EncryptedMessageCallback {
 }
 
 interface EncryptedMessage {
-    /** ID of the key agreement key of the receiver DID used to encrypt the message */
-    receiverKeyId: string
+    /** URI of the key agreement key of the receiver DID used to encrypt the message */
+    receiverKeyUri: string
     
-    /** ID of the key agreement key of the sender DID used to encrypt the message */
-    senderKeyId: string
+    /** URI of the key agreement key of the sender DID used to encrypt the message */
+    senderKeyUri: string
 
     /** ciphertext as hexadecimal */
     ciphertext: string
@@ -122,7 +122,7 @@ async function startExtensionSession(
     try {
         const session = await extension.startSession(dAppName, dAppEncryptionKeyUri, challenge);
         
-        // Resolve the `session.encryptionKeyId` and use this key and the nonce 
+        // Resolve the `session.encryptionKeyUri` and use this key and the nonce 
         // to decrypt `session.encryptedChallenge` and confirm that it’s equal to the original challenge.
         // This verification must happen on the server-side.
         
@@ -155,7 +155,7 @@ The extension MUST only inject itself into pages having the `window.kilt` object
     },
     name: 'My KILT credentials extension',
     version: '0.0.1',
-    specVersion: '1.0'
+    specVersion: '2.0'
 } as InjectedWindowProvider;
 ```
 
@@ -197,7 +197,7 @@ Third-party code tampering with these calls is pointless:
 ### Data types
 
 Definitions of data types, if not provided here, can be found in 
-[the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/globals.html).
+[the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/).
 
 
 ### Metadata
@@ -246,9 +246,9 @@ only in its background script, so that its private key remains outside of reach 
 
 To encrypt the message the sender MUST convert it to JSON and use the `x25519-xsalsa20-poly1305` algorithm 
 with the private key of the sender, the public key of the recipient, and 24 random bytes as a nonce.
-The encrypted message contains the ciphertext, the IDs of the keys used, and the nonce.
+The encrypted message contains the ciphertext, the URIs of the keys used, and the nonce.
 
-To decrypt the message the recipient MUST resolve the key IDs to keys, then use `x25519-xsalsa20-poly1305` 
+To decrypt the message the recipient MUST resolve the key URIs to keys, then use `x25519-xsalsa20-poly1305` 
 with the private key of the recipient, the public key of the sender, and the nonce to restore the JSON from the ciphertext.  
 After parsing this JSON the recipient MUST ensure that the `sender` field contains the DID of the other party.
 
@@ -364,7 +364,7 @@ The extension MAY start verification workflows after this event.
 interface SubmitTerms {
     /** CTypes for the proposed credential.
      * In most cases this will be just one, but in the case of nested ctypes, this can be multiple.
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/ictype.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICType.html */
     cTypes: ICType[]
 
     claim: {
@@ -376,14 +376,14 @@ interface SubmitTerms {
     }
 
     /** optional attester-signed binding 
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/iquote.iquoteattestersigned.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.IQuoteAttesterSigned.html */
     quote?: IQuoteAttesterSigned
     
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
     
     /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
     legitimations?: ICredential[]
 }
 ```
@@ -427,11 +427,11 @@ interface RequestAttestation {
         delegationId?: string
 
         /** optional array of credentials of the attester to include in the attestation 
-        *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html */
+        *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
         legitimations: ICredential[]
         
         /** signature of the data above using the user’s DID
-        *  TODO: @link */
+        *  @link https://kiltprotocol.github.io/sdk-js/modules/_kiltprotocol_types.html#DidSignature */
         claimerSignature: DidSignature
         
         /** root hash of the data above */
@@ -612,7 +612,7 @@ matches its identity and the `challenge`.
 ```typescript
 interface SubmitCredential {
     /** credential itself with the `claimerSignature` updated for the `challenge` the verifier provided
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/icredential.html  */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html  */
     credential: ICredential
 }
 ```
