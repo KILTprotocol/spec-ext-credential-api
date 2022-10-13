@@ -110,7 +110,10 @@ which is in turn an object containing property `credentials` with the value of s
 
 ```typescript
 window.kilt = {}
-Object.defineProperty(window.kilt, 'meta', { value: { versions: { credentials: '3.0' } }, enumerable: false })
+Object.defineProperty(window.kilt, 'meta', { 
+    value: { versions: { credentials: '3.0' } }, 
+    enumerable: false
+})
 ```
 
 The dApp can afterwards get all available extensions by iterating over the `window.kilt` object.
