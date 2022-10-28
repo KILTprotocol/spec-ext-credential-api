@@ -1,4 +1,4 @@
-# KILT Credential API (Draft Spec version 2.0)
+# KILT Credential API (Spec version 3.0)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
@@ -29,6 +29,15 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 interface GlobalKilt {
     /** `extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp */
     [extensionId: string]: InjectedWindowProvider
+    
+    /** Container for meta-information about the dApp */
+    meta: {
+        /** Versions of the various specifications this dApp adheres to */
+        versions: {
+            /** MUST equal the version of this specification the dApp adheres to */
+            credentials: '3.0'
+        }
+    }
 }
 
 interface InjectedWindowProvider {
@@ -50,7 +59,7 @@ interface InjectedWindowProvider {
     version: string
 
     /** MUST equal the version of this specification the extension adheres to */
-    specVersion: '2.0'
+    specVersion: '3.0'
 }
 
 interface PubSubSession {
@@ -96,9 +105,15 @@ interface EncryptedMessage {
 ### DApp consumes the API exposed by extension 
 
 The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
+This object MUST contain non-enumerable property `meta` being an object with a property `versions`, 
+which is in turn an object containing property `credentials` with the value of string `'3.0'`. 
 
 ```typescript
 window.kilt = {}
+Object.defineProperty(window.kilt, 'meta', { 
+    value: { versions: { credentials: '3.0' } }, 
+    enumerable: false
+})
 ```
 
 The dApp can afterwards get all available extensions by iterating over the `window.kilt` object.
@@ -143,6 +158,9 @@ it matches the original challenge to prevent replay attacks.
 ### Extension injects its API into a webpage
 
 The extension MUST only inject itself into pages having the `window.kilt` object.
+The extension MAY inspect the value of `window.kilt.meta.versions.credentials` object 
+and alter its behavior depending on the specification version the dApp uses.
+The absence of this value indicates that the dApp uses the Credentials specification version below 3.0.
 
 ```typescript
 (window.kilt as GlobalKilt).myKiltCredentialsExtension = {
@@ -155,7 +173,7 @@ The extension MUST only inject itself into pages having the `window.kilt` object
     },
     name: 'My KILT credentials extension',
     version: '0.0.1',
-    specVersion: '2.0'
+    specVersion: '3.0'
 } as InjectedWindowProvider;
 ```
 
@@ -405,7 +423,7 @@ so that the user does not need to enter it again when the payment needs to be tr
 
 ```typescript
 interface RequestAttestation {
-    requestForAttestation: {
+    credential: {
         claim: {
             /** ID of the CType */
             cTypeId: string
@@ -429,10 +447,6 @@ interface RequestAttestation {
         /** optional array of credentials of the attester to include in the attestation 
         *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
         legitimations: ICredential[]
-        
-        /** signature of the data above using the user’s DID
-        *  @link https://kiltprotocol.github.io/sdk-js/modules/_kiltprotocol_types.html#DidSignature */
-        claimerSignature: DidSignature
         
         /** root hash of the data above */
         rootHash: string
@@ -610,11 +624,40 @@ matches its identity and the `challenge`.
 | message_type | `'submit-credential'` |
 
 ```typescript
-interface SubmitCredential {
-    /** credential itself with the `claimerSignature` updated for the `challenge` the verifier provided
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html  */
-    credential: ICredential
-}
+/** Array of credentials themselves with the `claimerSignature`
+ *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredentialPresentation.html  */
+interface SubmitCredential extends Array<{
+    claim: {
+        /** ID of the CType */
+        cTypeId: string
+
+        /** contents of the proposed credential */
+        contents: object
+
+        /** DID URI to issue the credential for */
+        owner: string
+    }
+
+    /** mapping of hashes to nonces */
+    claimNonceMap: Record<string, string>
+
+    /** list of hashes */
+    claimHashes: string[]
+
+    /** optional ID of the DelegationNode of the attester to be used in the attestation */
+    delegationId?: string
+
+    /** optional array of credentials of the attester to include in the attestation
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
+    legitimations: ICredential[]
+
+    /** signature of the data above using the user’s DID
+     *  @link https://kiltprotocol.github.io/sdk-js/modules/_kiltprotocol_types.html#DidSignature */
+    claimerSignature: DidSignature & { challenge?: string }
+
+    /** root hash of the data above */
+    rootHash: string
+}> {}
 ```
 
 
