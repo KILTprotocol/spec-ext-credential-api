@@ -111,7 +111,7 @@ which is in turn an object containing property `credentials` with the value of s
 ```typescript
 window.kilt = {}
 Object.defineProperty(window.kilt, 'meta', { 
-    value: { versions: { credentials: '3.0' } }, 
+    versions: { credentials: '3.0' }, 
     enumerable: false
 })
 ```
