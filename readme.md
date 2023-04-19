@@ -1,4 +1,4 @@
-# KILT Credential API (Spec version 3.0)
+# KILT Credential API (Spec version 3.1)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
@@ -35,7 +35,7 @@ interface GlobalKilt {
         /** Versions of the various specifications this dApp adheres to */
         versions: {
             /** MUST equal the version of this specification the dApp adheres to */
-            credentials: '3.0'
+            credentials: '3.1'
         }
     }
 }
@@ -59,7 +59,7 @@ interface InjectedWindowProvider {
     version: string
 
     /** MUST equal the version of this specification the extension adheres to */
-    specVersion: '3.0'
+    specVersion: '3.1'
 }
 
 interface PubSubSession {
@@ -106,12 +106,12 @@ interface EncryptedMessage {
 
 The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
 This object MUST contain non-enumerable property `meta` being an object with a property `versions`, 
-which is in turn an object containing property `credentials` with the value of string `'3.0'`. 
+which is in turn an object containing property `credentials` with the value of string `'3.1'`. 
 
 ```typescript
 window.kilt = {}
 Object.defineProperty(window.kilt, 'meta', { 
-    value: { versions: { credentials: '3.0' } }, 
+    value: { versions: { credentials: '3.1' } }, 
     enumerable: false
 })
 ```
@@ -173,7 +173,7 @@ The absence of this value indicates that the dApp uses the Credentials specifica
     },
     name: 'My KILT credentials extension',
     version: '0.0.1',
-    specVersion: '3.0'
+    specVersion: '3.1'
 } as InjectedWindowProvider;
 ```
 
@@ -375,6 +375,10 @@ The processing of the optional field `quote` is currently unspecified.
 If the attester requires payment to issue this credential, the `quote` MUST be present.
 If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
 
+If the `owner` DID URI is provided and the extension controls this DID, then it SHOULD NOT be changed. 
+Legacy attesters provide meaningless values in this field, so if the extension does not control this DID
+then the value MUST be changed to the DID the user chooses.
+
 DApp and extension MAY start verification workflows before this event.
 The extension MAY start verification workflows after this event.
 
@@ -391,6 +395,9 @@ interface SubmitTerms {
         
         /** contents of the proposed credential */
         contents: object
+        
+        /** optional DID URI the credential will be issued for */
+        owner?: string
     }
 
     /** optional attester-signed binding 
