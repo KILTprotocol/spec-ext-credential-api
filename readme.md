@@ -375,10 +375,6 @@ The processing of the optional field `quote` is currently unspecified.
 If the attester requires payment to issue this credential, the `quote` MUST be present.
 If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
 
-If the `owner` DID URI is provided and the extension controls this DID, then it SHOULD NOT be changed. 
-Legacy attesters provide meaningless values in this field, so if the extension does not control this DID
-then the value MUST be changed to the DID the user chooses.
-
 DApp and extension MAY start verification workflows before this event.
 The extension MAY start verification workflows after this event.
 
@@ -418,6 +414,10 @@ interface SubmitTerms {
 
 The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
+
+If the `owner` DID URI was provided and the extension controls this DID, then the response SHOULD include the same `owner`. 
+Legacy attesters provide meaningless values in this field, so if the extension does not control this DID,
+then the response MUST include `owner` set to the DID the user chooses.
 
 If the `quote` was provided, and the user has entered the password to decrypt the private key for signing the request,
 the extension SHOULD temporarily cache either the password or the unencrypted private key, 
