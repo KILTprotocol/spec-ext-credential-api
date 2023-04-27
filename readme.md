@@ -422,7 +422,7 @@ If so, the extension SHOULD proceed as if `owner` was not provided.
 
 If the `'submit-terms'` message included an unknown DID or none at all as `owner`, the extension MUST ask the user 
 to choose the DID for which the credential will be issued. Otherwise, the extension SHOULD NOT offer the choice, 
-but still MUST get user’s consent to use this DID.
+but still MUST get the user’s consent to use this DID.
 
 The chosen or confirmed DID URI will be submitted as the `owner` field of the `claim` in the `'request-attestation'` message.
 The attester MUST only issue a credential to this DID.
