@@ -1,4 +1,4 @@
-# KILT Credential API (Spec version 3.0)
+# KILT Credential API (Spec version 3.1)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
@@ -35,7 +35,7 @@ interface GlobalKilt {
         /** Versions of the various specifications this dApp adheres to */
         versions: {
             /** MUST equal the version of this specification the dApp adheres to */
-            credentials: '3.0'
+            credentials: '3.1'
         }
     }
 }
@@ -59,7 +59,7 @@ interface InjectedWindowProvider {
     version: string
 
     /** MUST equal the version of this specification the extension adheres to */
-    specVersion: '3.0'
+    specVersion: '3.1'
 }
 
 interface PubSubSession {
@@ -106,12 +106,12 @@ interface EncryptedMessage {
 
 The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
 This object MUST contain non-enumerable property `meta` being an object with a property `versions`, 
-which is in turn an object containing property `credentials` with the value of string `'3.0'`. 
+which is in turn an object containing property `credentials` with the value of string `'3.1'`. 
 
 ```typescript
 window.kilt = {}
 Object.defineProperty(window.kilt, 'meta', { 
-    value: { versions: { credentials: '3.0' } }, 
+    value: { versions: { credentials: '3.1' } }, 
     enumerable: false
 })
 ```
@@ -173,7 +173,7 @@ The absence of this value indicates that the dApp uses the Credentials specifica
     },
     name: 'My KILT credentials extension',
     version: '0.0.1',
-    specVersion: '3.0'
+    specVersion: '3.1'
 } as InjectedWindowProvider;
 ```
 
@@ -391,6 +391,9 @@ interface SubmitTerms {
         
         /** contents of the proposed credential */
         contents: object
+        
+        /** optional DID URI the credential will be issued for */
+        owner?: string
     }
 
     /** optional attester-signed binding 
@@ -411,6 +414,19 @@ interface SubmitTerms {
 
 The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
+
+The previous message in the flow - `'submit-terms'` - contains the `claim` with an optional `owner` field containing a DID URI.
+This `owner` value being provided means that the attester is willing to issue the credential for this specific DID.
+Note that legacy attesters provide bogus DIDs in this field, this is likely the case if the extension does not control this DID.
+If so, the extension SHOULD proceed as if `owner` was not provided.
+
+If the `'submit-terms'` message included an unknown DID or none at all as `owner`, the extension MUST ask the user 
+to choose the DID for which the credential will be issued. Otherwise, the extension SHOULD NOT offer the choice, 
+but still MUST get the user’s consent to use this DID.
+
+The chosen or confirmed DID URI will be submitted as the `owner` field of the `claim` in the `'request-attestation'` message.
+The attester MUST only issue a credential to this DID.
+The attester MAY reject the request if this DID is different from the `owner` in the previous `'submit-terms'` message.
 
 If the `quote` was provided, and the user has entered the password to decrypt the private key for signing the request,
 the extension SHOULD temporarily cache either the password or the unencrypted private key, 
