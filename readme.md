@@ -564,7 +564,7 @@ interface Attestation {
 
 In case the attester does not approve the attestation request, no information about this appears on the blockchain.
 The extension can only get this information directly from the attester. 
-This could be useful to help user to remove the corresponding credential from the extension.
+A rejection message could be useful to help the user to remove the corresponding credential from the extension.
 
 Once the decision not to approve the attestation request has been made, the attester SHOULD send this message.
 If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it
