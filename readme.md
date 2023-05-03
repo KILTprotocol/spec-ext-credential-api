@@ -1,4 +1,4 @@
-# KILT Credential API (Spec version 3.1)
+# KILT Credential API (Spec version 3.2)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
@@ -35,7 +35,7 @@ interface GlobalKilt {
         /** Versions of the various specifications this dApp adheres to */
         versions: {
             /** MUST equal the version of this specification the dApp adheres to */
-            credentials: '3.1'
+            credentials: '3.2'
         }
     }
 }
@@ -59,7 +59,7 @@ interface InjectedWindowProvider {
     version: string
 
     /** MUST equal the version of this specification the extension adheres to */
-    specVersion: '3.1'
+    specVersion: '3.2'
 }
 
 interface PubSubSession {
@@ -106,12 +106,12 @@ interface EncryptedMessage {
 
 The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
 This object MUST contain non-enumerable property `meta` being an object with a property `versions`, 
-which is in turn an object containing property `credentials` with the value of string `'3.1'`. 
+which is in turn an object containing property `credentials` with the value of string `'3.2'`. 
 
 ```typescript
 window.kilt = {}
 Object.defineProperty(window.kilt, 'meta', { 
-    value: { versions: { credentials: '3.1' } }, 
+    value: { versions: { credentials: '3.2' } }, 
     enumerable: false
 })
 ```
@@ -173,7 +173,7 @@ The absence of this value indicates that the dApp uses the Credentials specifica
     },
     name: 'My KILT credentials extension',
     version: '0.0.1',
-    specVersion: '3.1'
+    specVersion: '3.2'
 } as InjectedWindowProvider;
 ```
 
@@ -557,6 +557,25 @@ interface Attestation {
     /** it is expected that the freshly issued credential is not yet revoked */
     revoked: false
 }
+```
+
+
+#### 6. Attester rejects attestation
+
+In case the attester does not approve the attestation request, no information about this appears on the blockchain.
+The extension can only get this information directly from the attester. 
+This could be useful to remove the corresponding credential from the extension.
+
+Once the decision not to approve the attestation request has been made, the attester SHOULD send this message.
+
+|||
+|-|-|
+| direction | `dApp -> extension`    |
+| message_type | `'reject-attestation'` |
+
+```typescript
+/** The contents of the message is simply the `rootHash` of the credential */
+interface AttestationRejection extends string {}
 ```
 
 
