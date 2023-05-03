@@ -568,7 +568,7 @@ This could be useful to help user to remove the corresponding credential from th
 
 Once the decision not to approve the attestation request has been made, the attester SHOULD send this message.
 If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it
-as rejected and SHOULD offer the user to remove it.
+as rejected and SHOULD offer the user the option to remove it.
 
 |||
 |-|-|
