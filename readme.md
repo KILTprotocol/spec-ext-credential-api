@@ -386,8 +386,8 @@ interface SubmitTerms {
     cTypes: ICType[]
 
     claim: {
-        /** ID of the CType */
-        cTypeId: string
+        /** Hash of the CType */
+        cTypeHash: string
         
         /** contents of the proposed credential */
         contents: object
@@ -441,8 +441,8 @@ so that the user does not need to enter it again when the payment needs to be tr
 interface RequestAttestation {
     credential: {
         claim: {
-            /** ID of the CType */
-            cTypeId: string
+            /** Hash of the CType */
+            cTypeHash: string
             
             /** contents of the proposed credential */
             contents: object
@@ -545,8 +545,8 @@ interface Attestation {
     /** same as the `rootHash` value of the `'request-attestation'` message */
     claimHash: string
     
-    /** ID of the CType*/
-    cTypeId: string
+    /** Hash of the CType*/
+    cTypeHash: string
 
     /** DID URI the credential was issued for */
     owner: string
@@ -665,8 +665,8 @@ matches its identity and the `challenge`.
  *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredentialPresentation.html  */
 interface SubmitCredential extends Array<{
     claim: {
-        /** ID of the CType */
-        cTypeId: string
+        /** Hash of the CType */
+        cTypeHash: string
 
         /** contents of the proposed credential */
         contents: object
