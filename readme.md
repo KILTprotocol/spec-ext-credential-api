@@ -624,7 +624,7 @@ interface RequestCredential {
             requiredProperties: string[]
         }
     ]
-    /** Target DID URI*/
+    /** Target DID URI */
     targetDid: string
 
     /** 24 random bytes as hexadecimal */
