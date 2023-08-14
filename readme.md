@@ -603,7 +603,7 @@ credentials for email address and phone number, they need to run one workflow re
 for email address (with one or more email address CTypes), and afterwards another requesting a credential for phone number
 (with one or more phone number CTypes).
 
-The message contains an optional `targetDid` field. The extension and the dApp SHOULD provide only credentials that are associated with the DID. If no DID is provided, all possible credentials can be used.
+The message contains an optional `owner` field. The extension and the dApp SHOULD provide only credentials that are associated with the DID. If no DID is provided, all possible credentials can be used.
 
 The `challenge` MUST be used only once. 
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
@@ -624,7 +624,7 @@ interface RequestCredential {
             requiredProperties: string[]
         }
     ]
-    /** Target DID URI */
+    /** Owner DID URI */
     owner?: string
 
     /** 24 random bytes as hexadecimal */
