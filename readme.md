@@ -1,4 +1,4 @@
-# KILT Credential API (Spec version 3.2)
+# KILT Credential API (Spec version 3.3)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
@@ -35,7 +35,7 @@ interface GlobalKilt {
         /** Versions of the various specifications this dApp adheres to */
         versions: {
             /** MUST equal the version of this specification the dApp adheres to */
-            credentials: '3.2'
+            credentials: '3.3'
         }
     }
 }
@@ -59,7 +59,7 @@ interface InjectedWindowProvider {
     version: string
 
     /** MUST equal the version of this specification the extension adheres to */
-    specVersion: '3.2'
+    specVersion: '3.3'
 }
 
 interface PubSubSession {
@@ -106,12 +106,12 @@ interface EncryptedMessage {
 
 The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
 This object MUST contain non-enumerable property `meta` being an object with a property `versions`, 
-which is in turn an object containing property `credentials` with the value of string `'3.2'`. 
+which is in turn an object containing property `credentials` with the value of string `'3.3'`. 
 
 ```typescript
 window.kilt = {}
 Object.defineProperty(window.kilt, 'meta', { 
-    value: { versions: { credentials: '3.2' } }, 
+    value: { versions: { credentials: '3.3' } }, 
     enumerable: false
 })
 ```
@@ -173,7 +173,7 @@ The absence of this value indicates that the dApp uses the Credentials specifica
     },
     name: 'My KILT credentials extension',
     version: '0.0.1',
-    specVersion: '3.2'
+    specVersion: '3.3'
 } as InjectedWindowProvider;
 ```
 
@@ -603,7 +603,7 @@ credentials for email address and phone number, they need to run one workflow re
 for email address (with one or more email address CTypes), and afterwards another requesting a credential for phone number
 (with one or more phone number CTypes).
 
-The message contains an optional `targetDid` field. The extension and the dApp MUST provide only credentials that are associated with the DID. If no DID is provided, all possible credentials can be used.
+The message contains an optional `targetDid` field. The extension and the dApp SHOULD provide only credentials that are associated with the DID. If no DID is provided, all possible credentials can be used.
 
 The `challenge` MUST be used only once. 
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
@@ -625,7 +625,7 @@ interface RequestCredential {
         }
     ]
     /** Target DID URI */
-    targetDid: string
+    owner?: string
 
     /** 24 random bytes as hexadecimal */
     challenge: string
