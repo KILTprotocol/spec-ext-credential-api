@@ -603,7 +603,10 @@ credentials for email address and phone number, they need to run one workflow re
 for email address (with one or more email address CTypes), and afterwards another requesting a credential for phone number
 (with one or more phone number CTypes).
 
-The message contains an optional `owner` field. The extension and the dApp SHOULD provide only credentials that are associated with the DID. If no DID is provided, all possible credentials can be used.
+The dApp MAY request a credential issued for a particular DID by providing it in the optional message field `owner`.
+If the message contains this field, the extension SHOULD ask the user to choose only from the credentials issued for
+this DID. Note that extensions supporting a previous version of the API might ignore this field. If the `owner` field
+ is absent, all possible credentials can be used.
 
 The `challenge` MUST be used only once. 
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
@@ -623,8 +626,8 @@ interface RequestCredential {
             /** list of credential attributes which MUST be included when submitting the credential */
             requiredProperties: string[]
         }
-    ]
-    /** Owner DID URI */
+    ] 
+    /** Optional DID URI the credential should be issued to */
     owner?: string
 
     /** 24 random bytes as hexadecimal */
