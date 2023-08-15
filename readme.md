@@ -627,6 +627,7 @@ interface RequestCredential {
             requiredProperties: string[]
         }
     ] 
+    
     /** Optional DID URI the credential should be issued to */
     owner?: string
 
