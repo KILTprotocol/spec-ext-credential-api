@@ -603,8 +603,8 @@ credentials for email address and phone number, they need to run one workflow re
 for email address (with one or more email address CTypes), and afterwards another requesting a credential for phone number
 (with one or more phone number CTypes).
 
-The dApp MAY request a credential issued for a particular DID by providing it in the optional message field `owner`.
-If the message contains this field, the extension SHOULD ask the user to choose only from the credentials issued for
+The sender MAY request a credential issued for a particular DID by providing it in the optional message field `owner`.
+If the extension received a message with this field, it SHOULD ask the user to choose only from the credentials issued for
 this DID. Note that extensions supporting a previous version of the API might ignore this field. If the `owner` field
  is absent, all possible credentials can be used.
 
