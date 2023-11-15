@@ -490,10 +490,9 @@ and the recipient address (`attesterAddress`).
 | message_type | `'request-payment'` |
 
 ```typescript
-interface RequestForPayment {
-    /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: string
-}
+/** This message is empty. It should be associated to the terms and quote using the `in-reply-to` field.
+ */
+type RequestForPayment = null
 ```
 
 
@@ -509,9 +508,6 @@ to the attester by sending the `'confirm-payment'` message.
 
 ```typescript
 interface PaymentConfirmation {
-    /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: string
-
     /** hash of the payment transaction */
     txHash: string
 
