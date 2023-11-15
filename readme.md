@@ -382,7 +382,7 @@ The extension MAY start verification workflows after this event.
 interface SubmitTerms {
     /** CTypes for the proposed credential.
      * In most cases this will be just one, but in the case of nested ctypes, this can be multiple.
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICType.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICType.html */
     cTypes: ICType[]
 
     claim: {
@@ -397,14 +397,14 @@ interface SubmitTerms {
     }
 
     /** optional attester-signed binding
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.IQuoteAttesterSigned.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.IQuoteAttesterSigned.html */
     quote?: IQuoteAttesterSigned
 
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
 
     /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
     legitimations?: ICredential[]
 }
 ```
@@ -461,7 +461,7 @@ interface RequestAttestation {
         delegationId?: string
 
         /** optional array of credentials of the attester to include in the attestation
-        *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
+        *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
         legitimations: ICredential[]
 
         /** root hash of the data above */
@@ -670,7 +670,7 @@ matches its identity and the `challenge`.
 
 ```typescript
 /** Array of credentials themselves with the `claimerSignature`
- *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredentialPresentation.html  */
+ *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredentialPresentation.html  */
 interface SubmitCredential extends Array<{
     claim: {
         /** Hash of the CType */
@@ -693,11 +693,11 @@ interface SubmitCredential extends Array<{
     delegationId?: string
 
     /** optional array of credentials of the attester to include in the attestation
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
     legitimations: ICredential[]
 
     /** signature of the data above using the user’s DID
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/_kiltprotocol_types.html#DidSignature */
+     *  @link https://kiltprotocol.github.io/sdk-js/types/types_src.DidSignature.html */
     claimerSignature: DidSignature & { challenge?: string }
 
     /** root hash of the data above */
