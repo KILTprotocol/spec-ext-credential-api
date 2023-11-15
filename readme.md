@@ -214,9 +214,12 @@ Third-party code tampering with these calls is pointless:
 
 ### Data types
 
-Definitions of data types, if not provided here, can be found in
-[the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/).
+Some of the data types are not provided inside this specification.
+Refer to the [kilt-extension-api](https://github.com/KILTprotocol/kilt-extension-api) and the [SDK](https://github.com/KILTprotocol/sdk-js) for a definition.
 
+* [IQuote](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L18)
+* [IQuoteAttesterSigned](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L30)
+* [IQuoteAgreement](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L38)
 
 ### Metadata
 
@@ -397,7 +400,7 @@ interface SubmitTerms {
     }
 
     /** optional attester-signed binding
-     *  @link TODO: Update link */
+     *  @link https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L30 */
     quote?: IQuoteAttesterSigned
 
     /** optional ID of the DelegationNode of the attester */
@@ -449,7 +452,8 @@ interface RequestAttestation {
          *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
         legitimations: VerifiablePresentation
     },
-    /** quote agreement signed by the claimer */
+    /** quote agreement signed by the claimer 
+     *  @link https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L38 */
     quote?: IQuoteAgreement
 }
 ```
