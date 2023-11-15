@@ -273,10 +273,10 @@ After parsing this JSON the recipient MUST ensure that the `sender` field contai
 
 ### Rejections
 
-|||
-|-|-|
-| direction | `extension <-> dApp` |
-| message_type | `'reject'` |
+|              |                      |
+| ------------ | -------------------- |
+| direction    | `extension <-> dApp` |
+| message_type | `'reject'`           |
 
 Rejection messages signal the intentional cancelling of an individual step in the flow.
 
@@ -322,10 +322,10 @@ interface Rejection {
 
 ### Errors
 
-|||
-|-|-|
-| direction | `extension <-> dApp` |
-| message_type | `'error'` |
+|              |                      |
+| ------------ | -------------------- |
+| direction    | `extension <-> dApp` |
+| message_type | `'error'`            |
 
 Error messages signal unintentional programming errors which happened during the processing of the incoming messages
 or when constructing a response message.
@@ -359,10 +359,10 @@ interface Error {
 
 #### 1. Attester proposes credential
 
-|||
-|-|-|
-| direction | `dApp -> extension` |
-| message_type | `'submit-terms'` |
+|              |                     |
+| ------------ | ------------------- |
+| direction    | `dApp -> extension` |
+| message_type | `'submit-terms'`    |
 
 Because of the anticipated multitude of various CTypes, the extension is not expected to provide a UI
 to create and fill in the claims. The role of the extension is to let the user authorize and sign off
@@ -432,9 +432,9 @@ If the `quote` was provided, and the user has entered the password to decrypt th
 the extension SHOULD temporarily cache either the password or the unencrypted private key,
 so that the user does not need to enter it again when the payment needs to be transferred.
 
-|||
-|-|-|
-| direction | `extension -> dApp` |
+|              |                         |
+| ------------ | ----------------------- |
+| direction    | `extension -> dApp`     |
 | message_type | `'request-attestation'` |
 
 ```typescript
@@ -496,9 +496,9 @@ to authorize the transfer of the payment to the attester.
 The previously provided `quote` contains the amount to be paid (`cost.gross`)
 and the recipient address (`attesterAddress`).
 
-|||
-|-|-|
-| direction | `dApp -> extension` |
+|              |                     |
+| ------------ | ------------------- |
+| direction    | `dApp -> extension` |
 | message_type | `'request-payment'` |
 
 ```typescript
@@ -514,9 +514,9 @@ interface RequestForPayment {
 After the user has authorized the payment and it has been transferred, the extension MUST confirm the transfer
 to the attester by sending the `'confirm-payment'` message.
 
-|||
-|-|-|
-| direction | `extension -> dApp` |
+|              |                     |
+| ------------ | ------------------- |
+| direction    | `extension -> dApp` |
 | message_type | `'confirm-payment'` |
 
 ```typescript
@@ -535,9 +535,9 @@ interface PaymentConfirmation {
 
 #### 5. Attester submits credential
 
-|||
-|-|-|
-| direction | `dApp -> extension` |
+|              |                        |
+| ------------ | ---------------------- |
+| direction    | `dApp -> extension`    |
 | message_type | `'submit-attestation'` |
 
 ```typescript
@@ -570,9 +570,9 @@ Once the decision not to approve the attestation request has been made, the atte
 If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it
 as rejected and SHOULD offer the user the option to remove it.
 
-|||
-|-|-|
-| direction | `dApp -> extension`    |
+|              |                        |
+| ------------ | ---------------------- |
+| direction    | `dApp -> extension`    |
 | message_type | `'reject-attestation'` |
 
 ```typescript
@@ -593,9 +593,9 @@ Repeat for multiple required credentials.
 
 #### 1. DApp or extension requests credential
 
-|||
-|-|-|
-| direction | `dApp <-> extension` |
+|              |                        |
+| ------------ | ---------------------- |
+| direction    | `dApp <-> extension`   |
 | message_type | `'request-credential'` |
 
 Multiple CTypes MAY be requested here only if they can be used interchangeably. For example, if the verifier needs
@@ -663,9 +663,9 @@ This prevents replay attacks by confirming the ownership of this identity.
 The dApp MUST verify in the backend that the `claimerSignature` returned by the extension
 matches its identity and the `challenge`.
 
-|||
-|-|-|
-| direction | `extension <-> dApp` |
+|              |                       |
+| ------------ | --------------------- |
+| direction    | `extension <-> dApp`  |
 | message_type | `'submit-credential'` |
 
 ```typescript
