@@ -6,7 +6,7 @@
 
 ### Extension
 
-A browser extension that stores and uses the identities and credentials of the user. 
+A browser extension that stores and uses the identities and credentials of the user.
 When the user visits a webpage, the extension injects its API into this webpage.
 
 ### dApp
@@ -29,7 +29,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 interface GlobalKilt {
     /** `extensionId` references the extension on the `GlobalKilt` object but is not used by the dApp */
     [extensionId: string]: InjectedWindowProvider
-    
+
     /** Container for meta-information about the dApp */
     meta: {
         /** Versions of the various specifications this dApp adheres to */
@@ -43,10 +43,10 @@ interface GlobalKilt {
 interface InjectedWindowProvider {
     startSession: (
         /** human-readable name of the dApp */
-        dAppName: string, 
+        dAppName: string,
 
         /** URI of the key agreement key of the dApp DID to be used to encrypt the session messages */
-        dAppEncryptionKeyUri: string, 
+        dAppEncryptionKeyUri: string,
 
         /** 24 random bytes as hexadecimal */
         challenge: string
@@ -65,19 +65,19 @@ interface InjectedWindowProvider {
 interface PubSubSession {
     /** Configure the callback the extension must use to send messages to the dApp. Overrides previous values. */
     listen: (callback: EncryptedMessageCallback) => Promise<void>
-    
+
     /** send the encrypted message to the extension */
     send: EncryptedMessageCallback
-    
+
     /** close the session and stop receiving further messages */
     close: () => Promise<void>
-    
+
     /** URI of the key agreement key of the temporary DID the extension will use to encrypt the session messages */
     encryptionKeyUri: string
-    
+
     /** bytes as hexadecimal */
     encryptedChallenge: string
-    
+
     /** 24 bytes nonce as hexadecimal */
     nonce: string
 }
@@ -89,29 +89,29 @@ interface EncryptedMessageCallback {
 interface EncryptedMessage {
     /** URI of the key agreement key of the receiver DID used to encrypt the message */
     receiverKeyUri: string
-    
+
     /** URI of the key agreement key of the sender DID used to encrypt the message */
     senderKeyUri: string
 
     /** ciphertext as hexadecimal */
     ciphertext: string
-    
+
     /** 24 bytes nonce as hexadecimal */
     nonce: string
 }
 ```
 
 
-### DApp consumes the API exposed by extension 
+### DApp consumes the API exposed by extension
 
 The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
-This object MUST contain non-enumerable property `meta` being an object with a property `versions`, 
-which is in turn an object containing property `credentials` with the value of string `'3.4'`. 
+This object MUST contain non-enumerable property `meta` being an object with a property `versions`,
+which is in turn an object containing property `credentials` with the value of string `'3.4'`.
 
 ```typescript
 window.kilt = {}
-Object.defineProperty(window.kilt, 'meta', { 
-    value: { versions: { credentials: '3.4' } }, 
+Object.defineProperty(window.kilt, 'meta', {
+    value: { versions: { credentials: '3.4' } },
     enumerable: false
 })
 ```
@@ -124,23 +124,23 @@ function getWindowExtensions(): InjectedWindowProvider[] {
 }
 ```
 
-The dApp should list all available extensions it can work with. 
+The dApp should list all available extensions it can work with.
 The user selects an extension from this list, and the communication starts from there.
 
 ```typescript
 async function startExtensionSession(
     extension: InjectedWindowProvider,
     dAppName: string,
-    dAppEncryptionKeyUri: string, 
+    dAppEncryptionKeyUri: string,
     challenge: string
 ): Promise<PubSubSession> {
     try {
         const session = await extension.startSession(dAppName, dAppEncryptionKeyUri, challenge);
-        
-        // Resolve the `session.encryptionKeyUri` and use this key and the nonce 
+
+        // Resolve the `session.encryptionKeyUri` and use this key and the nonce
         // to decrypt `session.encryptedChallenge` and confirm that it’s equal to the original challenge.
         // This verification must happen on the server-side.
-        
+
         return session;
     } catch (error) {
         console.error(`Error initializing ${extension.name}: ${error.message}`);
@@ -149,8 +149,8 @@ async function startExtensionSession(
 }
 ```
 
-The `challenge` MUST be used only once. 
-The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
+The `challenge` MUST be used only once.
+The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering.
 The dApp MUST decrypt the `encryptedChallenge` returned by the extension and ensure that
 it matches the original challenge to prevent replay attacks.
 
@@ -158,15 +158,15 @@ it matches the original challenge to prevent replay attacks.
 ### Extension injects its API into a webpage
 
 The extension MUST only inject itself into pages having the `window.kilt` object.
-The extension MAY inspect the value of `window.kilt.meta.versions.credentials` object 
+The extension MAY inspect the value of `window.kilt.meta.versions.credentials` object
 and alter its behavior depending on the specification version the dApp uses.
 The absence of this value indicates that the dApp uses the Credentials specification version below 3.0.
 
 ```typescript
 (window.kilt as GlobalKilt).myKiltCredentialsExtension = {
     startSession: async (
-        dAppName: string, 
-        dAppEncryptionKeyUri: string, 
+        dAppName: string,
+        dAppEncryptionKeyUri: string,
         challenge: string
     ): Promise<PubSubSession> => {
         return { /*...*/ };
@@ -182,7 +182,7 @@ The extension MUST perform the following tasks in `startSession`:
   as the page origin
 - generate a temporary DID and a keypair for encryption of messages of the current session
 - generate a nonce of 24 random bytes
-- use the temporary keypair, the dApp public key, and the nonce to encrypt the dApp-provided `challenge` 
+- use the temporary keypair, the dApp public key, and the nonce to encrypt the dApp-provided `challenge`
   with `x25519-xsalsa20-poly1305`
 
 The extension SHOULD perform the following tasks in `startSession`:
@@ -196,7 +196,7 @@ The extension SHOULD perform the following tasks in `startSession`:
 Messages SHOULD be queued until the dApp calls `listen`.
 
 The promise SHOULD be resolved after the dApp or extension has finished processing the message.
-A response message SHOULD only be sent after the promise is resolved. 
+A response message SHOULD only be sent after the promise is resolved.
 
 
 ### Security concerns while setting up the session
@@ -206,15 +206,15 @@ Third-party code tampering with these calls is pointless:
 - modifying the `challenge` will be detected by the dApp backend
 - replaying responses from other valid identities will result in a `encryptedChallenge` mismatch
 - pretending to be the extension will fail on the next step:
-  MitM will not be able to encrypt the message sent to the extension with the authentication 
-  of a DID that matches the origin. 
+  MitM will not be able to encrypt the message sent to the extension with the authentication
+  of a DID that matches the origin.
 
 
 ## Messaging Protocol
 
 ### Data types
 
-Definitions of data types, if not provided here, can be found in 
+Definitions of data types, if not provided here, can be found in
 [the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/).
 
 
@@ -245,7 +245,7 @@ interface Message {
     /** ID of the message this message responds to */
     inReplyTo?: string
 
-    /** when this message B is a response to the message A, 
+    /** when this message B is a response to the message A,
      *  B.references = [...A.references, A.inReplyTo] */
     references?: string[]
 }
@@ -262,12 +262,12 @@ Consequently, the dApp can decode messages from the extension only on the server
 since its private key is only available there. The extension can decode messages from the dApp
 only in its background script, so that its private key remains outside of reach of 3rd parties.
 
-To encrypt the message the sender MUST convert it to JSON and use the `x25519-xsalsa20-poly1305` algorithm 
+To encrypt the message the sender MUST convert it to JSON and use the `x25519-xsalsa20-poly1305` algorithm
 with the private key of the sender, the public key of the recipient, and 24 random bytes as a nonce.
 The encrypted message contains the ciphertext, the URIs of the keys used, and the nonce.
 
-To decrypt the message the recipient MUST resolve the key URIs to keys, then use `x25519-xsalsa20-poly1305` 
-with the private key of the recipient, the public key of the sender, and the nonce to restore the JSON from the ciphertext.  
+To decrypt the message the recipient MUST resolve the key URIs to keys, then use `x25519-xsalsa20-poly1305`
+with the private key of the recipient, the public key of the sender, and the nonce to restore the JSON from the ciphertext.
 After parsing this JSON the recipient MUST ensure that the `sender` field contains the DID of the other party.
 
 
@@ -280,40 +280,40 @@ After parsing this JSON the recipient MUST ensure that the `sender` field contai
 
 Rejection messages signal the intentional cancelling of an individual step in the flow.
 
-Rejection messages are generic. The message field `inReplyTo` contains the `messageId` of the message being rejected. 
-If the other party (OP) has not sent such a message, or this message does not imply a response, 
+Rejection messages are generic. The message field `inReplyTo` contains the `messageId` of the message being rejected.
+If the other party (OP) has not sent such a message, or this message does not imply a response,
 or OP has already received the response, then OP MUST ignore the rejection message.
-The parties SHOULD only send a rejection message for the latest message received. 
+The parties SHOULD only send a rejection message for the latest message received.
 
-The interaction is mostly driven from the dApp UI, which also has more screen estate compared to extensions. 
-In the multi-step flow, the user might want to cancel either an individual step or the whole flow. 
-Providing and explaining both options in the limited space might be challenging, 
-so the extension SHOULD provide means to cancel an individual step, while the dApp SHOULD provide both options. 
+The interaction is mostly driven from the dApp UI, which also has more screen estate compared to extensions.
+In the multi-step flow, the user might want to cancel either an individual step or the whole flow.
+Providing and explaining both options in the limited space might be challenging,
+so the extension SHOULD provide means to cancel an individual step, while the dApp SHOULD provide both options.
 The user also always has the last resort of simply closing the dApp page.
 
 The extension SHOULD report the closure of the popup (by the user or because of the switch to another app)
 as a cancellation, not an error.
 
-On receiving an error or a rejection from the dApp, the extension SHOULD offer options to retry and to cancel. 
-On receiving an error or a rejection from the extension, the dApp SHOULD highlight the option to cancel the flow 
-and MAY offer an option to trigger a retry. However, cancelling a step SHOULD NOT automatically cancel the flow, 
+On receiving an error or a rejection from the dApp, the extension SHOULD offer options to retry and to cancel.
+On receiving an error or a rejection from the extension, the dApp SHOULD highlight the option to cancel the flow
+and MAY offer an option to trigger a retry. However, cancelling a step SHOULD NOT automatically cancel the flow,
 since we expect many actions to be trial and error explorations of possibilities, as in the following example.
 
-When the attester requests credentials from the user via the nested verification workflow, 
-their CTypes are compared using hashes, which the user cannot conveniently do manually in advance. 
-The user’s train of thought could be: "They want some kind of credential, let’s see if mine would suit them. 
+When the attester requests credentials from the user via the nested verification workflow,
+their CTypes are compared using hashes, which the user cannot conveniently do manually in advance.
+The user’s train of thought could be: "They want some kind of credential, let’s see if mine would suit them.
 Okay, it did not, so I cannot provide what they want, but I do not want to cancel the whole flow."
 
-In a different scenario, the extension MAY try to detect the trustworthiness of the dApp 
-by requesting from it some credentials, and the dApp MAY reject these requests. 
-The extension MAY use the results of this exchange to indicate to the user its level of confidence 
+In a different scenario, the extension MAY try to detect the trustworthiness of the dApp
+by requesting from it some credentials, and the dApp MAY reject these requests.
+The extension MAY use the results of this exchange to indicate to the user its level of confidence
 in the trustworthiness of the dApp, for example, as the browsers do for SSL and EV certificates.
 
 ```typescript
 interface Rejection {
     /** optional machine-readable type of the rejection */
     name?: string
-    
+
     /** optional human-readable description of the rejection */
     message?: string
 }
@@ -332,13 +332,13 @@ or when constructing a response message.
 
 If an error happened while setting up the communication session, the session SHOULD be aborted or restarted.
 After the session has started, errors SHOULD NOT be thrown, only sent as messages to guarantee authenticity.
-So the call of `send()` SHOULD NOT throw errors and SHOULD NOT reject the promise it has returned. 
+So the call of `send()` SHOULD NOT throw errors and SHOULD NOT reject the promise it has returned.
 The same applies to the `callback` provided to the `listen()` call.
 
-There is a chance that encrypted authenticated error messages cannot be generated, because the code 
-running in the context of the dApp webpage cannot reach the components capable of encryption. 
-For example, if the computer is offline, the dApp javascript will not be able to communicate 
-with the dApp backend which has access to the encryption keys. This is anticipated, so it’s not a bug, 
+There is a chance that encrypted authenticated error messages cannot be generated, because the code
+running in the context of the dApp webpage cannot reach the components capable of encryption.
+For example, if the computer is offline, the dApp javascript will not be able to communicate
+with the dApp backend which has access to the encryption keys. This is anticipated, so it’s not a bug,
 but rather an operational error. Such situations SHOULD be handled on the dApp side
 instead of passing this error to the extension. A breakdown in communication between different scripts
 of the extension is also possible, but this rather indicates a real programming error without a good option
@@ -370,7 +370,7 @@ on the claims prepared by the attester.
 
 The attester SHOULD provide a UI to create and fill in the details of the claim.
 
-The processing of the optional field `quote` is currently unspecified. 
+The processing of the optional field `quote` is currently unspecified.
 
 If the attester requires payment to issue this credential, the `quote` MUST be present.
 If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
@@ -382,29 +382,29 @@ The extension MAY start verification workflows after this event.
 interface SubmitTerms {
     /** CTypes for the proposed credential.
      * In most cases this will be just one, but in the case of nested ctypes, this can be multiple.
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICType.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICType.html */
     cTypes: ICType[]
 
     claim: {
         /** Hash of the CType */
         cTypeHash: string
-        
+
         /** contents of the proposed credential */
         contents: object
-        
+
         /** optional DID URI the credential will be issued for */
         owner?: string
     }
 
-    /** optional attester-signed binding 
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.IQuoteAttesterSigned.html */
+    /** optional attester-signed binding
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.IQuoteAttesterSigned.html */
     quote?: IQuoteAttesterSigned
-    
+
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
-    
+
     /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
     legitimations?: ICredential[]
 }
 ```
@@ -420,8 +420,8 @@ This `owner` value being provided means that the attester is willing to issue th
 Note that legacy attesters provide bogus DIDs in this field, this is likely the case if the extension does not control this DID.
 If so, the extension SHOULD proceed as if `owner` was not provided.
 
-If the `'submit-terms'` message included an unknown DID or none at all as `owner`, the extension MUST ask the user 
-to choose the DID for which the credential will be issued. Otherwise, the extension SHOULD NOT offer the choice, 
+If the `'submit-terms'` message included an unknown DID or none at all as `owner`, the extension MUST ask the user
+to choose the DID for which the credential will be issued. Otherwise, the extension SHOULD NOT offer the choice,
 but still MUST get the user’s consent to use this DID.
 
 The chosen or confirmed DID URI will be submitted as the `owner` field of the `claim` in the `'request-attestation'` message.
@@ -429,7 +429,7 @@ The attester MUST only issue a credential to this DID.
 The attester MAY reject the request if this DID is different from the `owner` in the previous `'submit-terms'` message.
 
 If the `quote` was provided, and the user has entered the password to decrypt the private key for signing the request,
-the extension SHOULD temporarily cache either the password or the unencrypted private key, 
+the extension SHOULD temporarily cache either the password or the unencrypted private key,
 so that the user does not need to enter it again when the payment needs to be transferred.
 
 |||
@@ -443,27 +443,27 @@ interface RequestAttestation {
         claim: {
             /** Hash of the CType */
             cTypeHash: string
-            
+
             /** contents of the proposed credential */
             contents: object
-            
+
             /** DID URI to issue the credential for */
             owner: string
         }
-        
+
         /** mapping of hashes to nonces */
         claimNonceMap: Record<string, string>
-        
+
         /** list of hashes */
         claimHashes: string[]
-        
+
         /** optional ID of the DelegationNode of the attester to be used in the attestation */
         delegationId?: string
 
-        /** optional array of credentials of the attester to include in the attestation 
-        *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
+        /** optional array of credentials of the attester to include in the attestation
+        *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
         legitimations: ICredential[]
-        
+
         /** root hash of the data above */
         rootHash: string
     },
@@ -486,14 +486,14 @@ This specification does not prescribe the means of payment.
 The attester MUST NOT send this message if it does not require payment to issue this credential.
 The attester MUST NOT send this message if the payment happens via the attester website.
 
-This attester MAY send this message if it wants the user to transfer payment in KILT Coins by themselves 
+This attester MAY send this message if it wants the user to transfer payment in KILT Coins by themselves
 without interrupting the flow.
 
 The extension MAY start verification workflows after this event.
 
-Upon receiving the `'request-payment'` message the extension SHOULD show the user the interface 
+Upon receiving the `'request-payment'` message the extension SHOULD show the user the interface
 to authorize the transfer of the payment to the attester.
-The previously provided `quote` contains the amount to be paid (`cost.gross`) 
+The previously provided `quote` contains the amount to be paid (`cost.gross`)
 and the recipient address (`attesterAddress`).
 
 |||
@@ -523,10 +523,10 @@ to the attester by sending the `'confirm-payment'` message.
 interface PaymentConfirmation {
     /** same as the `rootHash` value of the `'request-attestation'` message */
     claimHash: string
-    
+
     /** hash of the payment transaction */
     txHash: string
-    
+
     /** hash of the block which includes the payment transaction */
     blockHash: string
 }
@@ -544,7 +544,7 @@ interface PaymentConfirmation {
 interface Attestation {
     /** same as the `rootHash` value of the `'request-attestation'` message */
     claimHash: string
-    
+
     /** Hash of the CType*/
     cTypeHash: string
 
@@ -553,7 +553,7 @@ interface Attestation {
 
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
-    
+
     /** it is expected that the freshly issued credential is not yet revoked */
     revoked: false
 }
@@ -563,7 +563,7 @@ interface Attestation {
 #### 6. Attester rejects attestation
 
 In case the attester does not approve the attestation request, no information about this appears on the blockchain.
-The extension can only get this information directly from the attester. 
+The extension can only get this information directly from the attester.
 A rejection message could be useful to help the user to remove the corresponding credential from the extension.
 
 Once the decision not to approve the attestation request has been made, the attester SHOULD send this message.
@@ -583,9 +583,9 @@ interface AttestationRejection extends string {}
 
 ### Verification Workflow
 
-This workflow MAY be started independently. It also MAY be nested and deeply nested in the middle of ongoing 
-Attestation Workflows and Verification Workflows. The meaning of starting a nested workflow is: 
-"to answer your request (or to continue to the next step in the current workflow) 
+This workflow MAY be started independently. It also MAY be nested and deeply nested in the middle of ongoing
+Attestation Workflows and Verification Workflows. The meaning of starting a nested workflow is:
+"to answer your request (or to continue to the next step in the current workflow)
 I need an additional credential from you".
 
 Repeat for multiple required credentials.
@@ -608,8 +608,8 @@ If the extension received a message with this field, it SHOULD ask the user to c
 this DID. Note that extensions supporting a previous version of the API might ignore this field. If the `owner` field
  is absent, all possible credentials can be used.
 
-The `challenge` MUST be used only once. 
-The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering. 
+The `challenge` MUST be used only once.
+The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering.
 
 DApp and extension MAY start verification workflows after this event.
 
@@ -622,18 +622,18 @@ interface RequestCredential {
 
             /** optional list of DIDs of attesters trusted by this verifier */
             trustedAttesters?: string[]
-            
+
             /** list of credential attributes which MUST be included when submitting the credential */
             requiredProperties: string[]
         }
-    ] 
-    
+    ]
+
     /** Optional DID URI the credential should be issued to */
     owner?: string
 
     /** 24 random bytes as hexadecimal */
     challenge: string
-}   
+}
 
 const exampleRequest: RequestCredential = {
     "cTypes": [
@@ -656,11 +656,11 @@ const exampleRequest: RequestCredential = {
 The extension MUST only send the credential with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
-The `challenge` from the previous message MUST be used to update the `claimerSignature` 
-with the private key of the identity which owns the credential. 
+The `challenge` from the previous message MUST be used to update the `claimerSignature`
+with the private key of the identity which owns the credential.
 This prevents replay attacks by confirming the ownership of this identity.
 
-The dApp MUST verify in the backend that the `claimerSignature` returned by the extension 
+The dApp MUST verify in the backend that the `claimerSignature` returned by the extension
 matches its identity and the `challenge`.
 
 |||
@@ -670,7 +670,7 @@ matches its identity and the `challenge`.
 
 ```typescript
 /** Array of credentials themselves with the `claimerSignature`
- *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredentialPresentation.html  */
+ *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredentialPresentation.html  */
 interface SubmitCredential extends Array<{
     claim: {
         /** Hash of the CType */
@@ -693,11 +693,11 @@ interface SubmitCredential extends Array<{
     delegationId?: string
 
     /** optional array of credentials of the attester to include in the attestation
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/_kiltprotocol_types.ICredential.html */
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
     legitimations: ICredential[]
 
     /** signature of the data above using the user’s DID
-     *  @link https://kiltprotocol.github.io/sdk-js/modules/_kiltprotocol_types.html#DidSignature */
+     *  @link https://kiltprotocol.github.io/sdk-js/types/types_src.DidSignature.html */
     claimerSignature: DidSignature & { challenge?: string }
 
     /** root hash of the data above */
@@ -708,22 +708,22 @@ interface SubmitCredential extends Array<{
 
 ## Security considerations
 
-The strong encryption used in the communication prevents the class of attacks on the communication protocol itself, 
+The strong encryption used in the communication prevents the class of attacks on the communication protocol itself,
 however several other attack surfaces remain. Ignoring all of them by placing full responsibility on the user
 will risk slowing down the growth of the ecosystem: users will have to invest unreasonable efforts to use it safely.
 
 
 ### Malware
 
-Not much can be done if some malware has full control of the user’s computer. 
+Not much can be done if some malware has full control of the user’s computer.
 
 *Conclusion:* protection against keyloggers with disc and/or network traffic access is outside the scope of this specification.
 
 
 ### Evil extensions
 
-Extensions are limited by the API that browsers provide to them, but control over network requests 
-combined with the capability to inject code in the runtime makes resistance futile. 
+Extensions are limited by the API that browsers provide to them, but control over network requests
+combined with the capability to inject code in the runtime makes resistance futile.
 
 *Conclusion:* protection against evil extensions is also outside the scope of this specification.
 
@@ -733,35 +733,35 @@ combined with the capability to inject code in the runtime makes resistance futi
 DApps can be malicious. A typo in the URI or a search request might lead the user to a dApp that should not be trusted.
 
 In the real world, trust relies on societal mechanisms and is usually distributed from centralized sources.
-An example from the internet is the Extended Validation SSL certificates signed by Certification Authorities 
-from a hard-coded list. This approach does not translate directly into the decentralized blockchain ecosystem. 
+An example from the internet is the Extended Validation SSL certificates signed by Certification Authorities
+from a hard-coded list. This approach does not translate directly into the decentralized blockchain ecosystem.
 
-Every verifier can list their trusted attesters, thus delegating them trust. One downside to this solution is that the list 
-will likely be quite long, and making the user choose from it would result in a poor user experience. A more serious issue 
+Every verifier can list their trusted attesters, thus delegating them trust. One downside to this solution is that the list
+will likely be quite long, and making the user choose from it would result in a poor user experience. A more serious issue
 with this approach is that the verifier itself might be a part of a malicious network and thus cannot be trusted.
 
-*Conclusion:* a decentralized solution to determine the high trustworthiness of an identity is required. 
+*Conclusion:* a decentralized solution to determine the high trustworthiness of an identity is required.
 Some mechanisms specific to the KILT network might work for indicating trustworthiness.
-Since the KILT Coin balance of an identity is publicly available, 
+Since the KILT Coin balance of an identity is publicly available,
 confirming that the dApp owns a large amount of coins also provides some signal of serious intentions.
 
 
 ### Man-in-the-middle
 
-A significant fraction of websites embed third-party scripts, advertisement being the most common source. 
-Malicious actors have already used this path to inject malicious code in the runtime of the page. 
-This runtime is the only medium for communication between the dApp and the extension, 
+A significant fraction of websites embed third-party scripts, advertisement being the most common source.
+Malicious actors have already used this path to inject malicious code in the runtime of the page.
+This runtime is the only medium for communication between the dApp and the extension,
 so the evil code has a way to position itself as a man-in-the-middle.
-Messages that are encrypted and authenticated are invulnerable to such attacks, 
+Messages that are encrypted and authenticated are invulnerable to such attacks,
 as the MitM can neither modify nor read them. Nor can it inject its own messages into the stream.
 
-*Countermeasures:* 
+*Countermeasures:*
 
 The extension needs to confirm the public key of the dApp out of band.
 The tamper-proof mechanism for that is defined in the
 [Well Known DID Configuration specification](https://identity.foundation/.well-known/resources/did-configuration/).
 
-Replay attacks will be prevented by participants responding to challenges provided by the other party and/or 
+Replay attacks will be prevented by participants responding to challenges provided by the other party and/or
 by including some unique ID of the previous message in the response.
 
 
@@ -769,20 +769,20 @@ by including some unique ID of the previous message in the response.
 
 The identifiers, including DIDs, should not be exposed to dApps without user consent.
 
-*Countermeasures:* even during consequent visits to a dApp approved by the user, 
+*Countermeasures:* even during consequent visits to a dApp approved by the user,
 the exposure of the DIDs should happen at the latest possible moment.
 This communication happens via encrypted messages, so the DIDs are safe from MitM attacks.
 
 
 ### Keeping the private key encrypted
 
-The extensions store the private keys on disk in an encrypted form. 
-It is likely that even when the extension runs in the browser, 
+The extensions store the private keys on disk in an encrypted form.
+It is likely that even when the extension runs in the browser,
 the lifetime of unencrypted private keys in the RAM is short.
 
 *Countermeasures:* given that the extension needs the private key to decode a message from dApp,
 we recommend using a one-per-page-load temporary key pair to encrypt the messages,
-not the keypairs of real identities. 
+not the keypairs of real identities.
 
-The private keys are still needed to sign certain requests, 
+The private keys are still needed to sign certain requests,
 but should be removed from the RAM after signing them.
