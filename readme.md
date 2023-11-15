@@ -393,19 +393,19 @@ interface SubmitTerms {
         contents: object
 
         /** optional DID URI the credential will be issued for */
-        owner?: string
+        subject?: string
     }
 
     /** optional attester-signed binding
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.IQuoteAttesterSigned.html */
+     *  @link TODO: Update link */
     quote?: IQuoteAttesterSigned
 
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
 
     /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
-    legitimations?: ICredential[]
+     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
+    legitimations?: VerifiablePresentation
 }
 ```
 
@@ -415,18 +415,14 @@ interface SubmitTerms {
 The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
-The previous message in the flow - `'submit-terms'` - contains the `claim` with an optional `owner` field containing a DID URI.
-This `owner` value being provided means that the attester is willing to issue the credential for this specific DID.
-Note that legacy attesters provide bogus DIDs in this field, this is likely the case if the extension does not control this DID.
-If so, the extension SHOULD proceed as if `owner` was not provided.
+The previous message in the flow - `'submit-terms'` - contains the `claim` with an optional `subject` field containing a DID URI.
+This `subject` value being provided means that the attester is willing to issue the credential for this specific DID.
+If the `'submit-terms'` message included an unknown DID or none at all as `subject`, the extension MUST ask the user to choose the DID for which the credential will be issued.
+Otherwise, the extension SHOULD NOT offer the choice, but still MUST get the user’s consent to use this DID.
 
-If the `'submit-terms'` message included an unknown DID or none at all as `owner`, the extension MUST ask the user
-to choose the DID for which the credential will be issued. Otherwise, the extension SHOULD NOT offer the choice,
-but still MUST get the user’s consent to use this DID.
-
-The chosen or confirmed DID URI will be submitted as the `owner` field of the `claim` in the `'request-attestation'` message.
+The chosen or confirmed DID URI will be submitted as the `subject` field of the `claim` in the `'request-attestation'` message.
 The attester MUST only issue a credential to this DID.
-The attester MAY reject the request if this DID is different from the `owner` in the previous `'submit-terms'` message.
+The attester MAY reject the request if this DID is different from the `subject` in the previous `'submit-terms'` message.
 
 
 |              |                         |
@@ -436,33 +432,22 @@ The attester MAY reject the request if this DID is different from the `owner` in
 
 ```typescript
 interface RequestAttestation {
-    credential: {
-        claim: {
-            /** Hash of the CType */
-            cTypeHash: string
+    claim: {
+        /** Hash of the CType */
+        cTypeHash: string
 
-            /** contents of the proposed credential */
-            contents: object
+        /** contents of the proposed credential */
+        contents: object
 
-            /** DID URI to issue the credential for */
-            owner: string
-        }
-
-        /** mapping of hashes to nonces */
-        claimNonceMap: Record<string, string>
-
-        /** list of hashes */
-        claimHashes: string[]
+        /** DID URI to issue the credential for */
+        subject: string
 
         /** optional ID of the DelegationNode of the attester to be used in the attestation */
         delegationId?: string
 
         /** optional array of credentials of the attester to include in the attestation
-        *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
-        legitimations: ICredential[]
-
-        /** root hash of the data above */
-        rootHash: string
+         *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
+        legitimations: VerifiablePresentation
     },
     /** quote agreement signed by the claimer */
     quote?: IQuoteAgreement
@@ -546,7 +531,7 @@ interface Attestation {
     cTypeHash: string
 
     /** DID URI the credential was issued for */
-    owner: string
+    subject: string
 
     /** optional ID of the DelegationNode of the attester */
     delegationId?: string
@@ -587,7 +572,6 @@ I need an additional credential from you".
 
 Repeat for multiple required credentials.
 
-
 #### 1. DApp or extension requests credential
 
 |              |                        |
@@ -595,15 +579,15 @@ Repeat for multiple required credentials.
 | direction    | `dApp <-> extension`   |
 | message_type | `'request-credential'` |
 
-Multiple CTypes MAY be requested here only if they can be used interchangeably. For example, if the verifier needs
-credentials for email address and phone number, they need to run one workflow requesting a credential
+Multiple CTypes MAY be requested here only if they can be used interchangeably.
+For example, if the verifier needs credentials for email address and phone number, they need to run one workflow requesting a credential
 for email address (with one or more email address CTypes), and afterwards another requesting a credential for phone number
 (with one or more phone number CTypes).
 
-The sender MAY request a credential issued for a particular DID by providing it in the optional message field `owner`.
-If the extension received a message with this field, it SHOULD ask the user to choose only from the credentials issued for
-this DID. Note that extensions supporting a previous version of the API might ignore this field. If the `owner` field
- is absent, all possible credentials can be used.
+The sender MAY request a credential issued for a particular DID by providing it in the optional message field `subject`.
+If the extension received a message with this field, it MUST ask the user to choose only from the credentials issued for
+this DID.
+If the `subject` field is absent, all possible credentials can be used.
 
 The `challenge` MUST be used only once.
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering.
@@ -626,7 +610,7 @@ interface RequestCredential {
     ]
 
     /** Optional DID URI the credential should be issued to */
-    owner?: string
+    subject?: string
 
     /** 24 random bytes as hexadecimal */
     challenge: string
@@ -653,12 +637,9 @@ const exampleRequest: RequestCredential = {
 The extension MUST only send the credential with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
-The `challenge` from the previous message MUST be used to update the `claimerSignature`
+The `challenge` from the previous message MUST be used to create the [verifiable presentation](https://www.w3.org/TR/vc-data-model/#presentations-0)
 with the private key of the identity which owns the credential.
 This prevents replay attacks by confirming the ownership of this identity.
-
-The dApp MUST verify in the backend that the `claimerSignature` returned by the extension
-matches its identity and the `challenge`.
 
 |              |                       |
 | ------------ | --------------------- |
@@ -666,40 +647,9 @@ matches its identity and the `challenge`.
 | message_type | `'submit-credential'` |
 
 ```typescript
-/** Array of credentials themselves with the `claimerSignature`
- *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredentialPresentation.html  */
-interface SubmitCredential extends Array<{
-    claim: {
-        /** Hash of the CType */
-        cTypeHash: string
-
-        /** contents of the proposed credential */
-        contents: object
-
-        /** DID URI to issue the credential for */
-        owner: string
-    }
-
-    /** mapping of hashes to nonces */
-    claimNonceMap: Record<string, string>
-
-    /** list of hashes */
-    claimHashes: string[]
-
-    /** optional ID of the DelegationNode of the attester to be used in the attestation */
-    delegationId?: string
-
-    /** optional array of credentials of the attester to include in the attestation
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
-    legitimations: ICredential[]
-
-    /** signature of the data above using the user’s DID
-     *  @link https://kiltprotocol.github.io/sdk-js/types/types_src.DidSignature.html */
-    claimerSignature: DidSignature & { challenge?: string }
-
-    /** root hash of the data above */
-    rootHash: string
-}> {}
+/** A verifiable presentation.
+ *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
+interface SubmitCredential extends VerifiablePresentation {}
 ```
 
 
