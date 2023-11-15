@@ -250,7 +250,7 @@ interface Message {
     /** ID of the message this message responds to */
     inReplyTo?: string
 
-    /** when this message B is a response to the message A,
+    /** A list of message IDs of previous messages. When this message B is a response to the message A,
      *  B.references = [...A.references, A.inReplyTo] */
     references?: string[]
 }
@@ -538,29 +538,6 @@ These salts MUST be used only once and be generated using a cryptographic random
  * @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.KiltCredentialV1.html */
 type SubmitCredential = KiltCredentialV1
 ```
-
-#### 6. Attester rejects attestation
-
-In case the attester does not approve the attestation request, no information about this appears on the blockchain.
-The extension can only get this information directly from the attester.
-A rejection message could be useful to help the user to remove the corresponding credential from the extension.
-
-Once the decision not to approve the attestation request has been made, the attester SHOULD send this message.
-If the corresponding pending credential is stored in the extension, on receiving this message the extension MUST mark it
-as rejected and SHOULD offer the user the option to remove it.
-
-|              |                        |
-| ------------ | ---------------------- |
-| direction    | `dApp -> extension`    |
-| message_type | `'reject-attestation'` |
-
-```typescript
-/** The contents of the message is empty. If multiply attestation requests are pending, the
- * `in-reply-to` field of the message object should be used to associate the rejection with
- * the corresponding request. */
-type AttestationRejection = null
-```
-
 
 ### Verification Workflow
 
