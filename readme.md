@@ -220,6 +220,8 @@ Refer to the [kilt-extension-api](https://github.com/KILTprotocol/kilt-extension
 * [IQuote](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L18)
 * [IQuoteAttesterSigned](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L30)
 * [IQuoteAgreement](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L38)
+* [VerifiablePresentation](https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html)
+* [KiltCredentialV1](https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.KiltCredentialV1.html)
 
 ### Metadata
 
@@ -521,28 +523,20 @@ interface PaymentConfirmation {
 
 #### 5. Attester submits credential
 
-|              |                        |
-| ------------ | ---------------------- |
-| direction    | `dApp -> extension`    |
-| message_type | `'submit-attestation'` |
+If the attester successfully verified the claim, they SHOULD send a `submit-credential` message.
+This message contains the attested credential.
+To build the credential, the attester will generate the salts which are used in the selective disclosure scheme.
+These salts MUST be used only once and be generated using a cryptographic random generator.
+
+|              |                       |
+| ------------ | --------------------- |
+| direction    | `dApp -> extension`   |
+| message_type | `'submit-credential'` |
 
 ```typescript
-interface Attestation {
-    /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: string
-
-    /** Hash of the CType*/
-    cTypeHash: string
-
-    /** DID URI the credential was issued for */
-    subject: string
-
-    /** optional ID of the DelegationNode of the attester */
-    delegationId?: string
-
-    /** it is expected that the freshly issued credential is not yet revoked */
-    revoked: false
-}
+/** The content of the message is the attested credential.
+ * @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.KiltCredentialV1.html */
+type SubmitCredential = KiltCredentialV1
 ```
 
 
@@ -563,7 +557,7 @@ as rejected and SHOULD offer the user the option to remove it.
 
 ```typescript
 /** The contents of the message is simply the `rootHash` of the credential */
-interface AttestationRejection extends string {}
+type AttestationRejection = string
 ```
 
 
@@ -653,7 +647,7 @@ This prevents replay attacks by confirming the ownership of this identity.
 ```typescript
 /** A verifiable presentation.
  *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
-interface SubmitCredential extends VerifiablePresentation {}
+type SubmitCredential = VerifiablePresentation
 ```
 
 
