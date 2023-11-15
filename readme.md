@@ -428,9 +428,6 @@ The chosen or confirmed DID URI will be submitted as the `owner` field of the `c
 The attester MUST only issue a credential to this DID.
 The attester MAY reject the request if this DID is different from the `owner` in the previous `'submit-terms'` message.
 
-If the `quote` was provided, and the user has entered the password to decrypt the private key for signing the request,
-the extension SHOULD temporarily cache either the password or the unencrypted private key,
-so that the user does not need to enter it again when the payment needs to be transferred.
 
 |              |                         |
 | ------------ | ----------------------- |
