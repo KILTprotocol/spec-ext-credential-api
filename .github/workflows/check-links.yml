@@ -1,7 +1,9 @@
 name: "check-links"
-description: "Check links in markdown files"
 
-on: push
+on:
+    push:
+    schedule:
+        - cron: "13 9 * * 1"
 
 jobs:
     markdown-link-check:
