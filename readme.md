@@ -415,7 +415,7 @@ interface SubmitTerms {
 ```
 
 
-#### 2. Extension requests credential
+#### 2.a Extension requests credential
 
 The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
@@ -466,6 +466,10 @@ However, the attester MUST perform checks that the complete data necessary for a
 and properly formatted before sending the `'request-payment'` message or requesting the user to pay via other means.
 If any of the checks have failed, the attester MUST NOT request the payment via any means.
 
+#### 2.b Extension rejects credential
+
+The user might not agree to the terms that the attester proposed.
+If the user rejects the terms, the extension MUST send a [rejection message](#rejections), referencing the `submit-terms` message in the `in-reply-to` field of the message object.
 
 #### 3. Optional: Attester requests payment
 
@@ -496,7 +500,7 @@ type RequestForPayment = null
 ```
 
 
-#### 4. Optional: Extension confirms payment
+#### 4.a Optional: Extension confirms payment
 
 After the user has authorized the payment and it has been transferred, the extension MUST confirm the transfer
 to the attester by sending the `'confirm-payment'` message.
@@ -516,8 +520,12 @@ interface PaymentConfirmation {
 }
 ```
 
+#### 4.b Optional: Extension rejects payment
 
-#### 5. Attester submits credential
+The extension MUST send a [rejection message](#rejections) if the user cancels or rejects the payment.
+
+
+#### 5.a Attester submits credential
 
 If the attester successfully verified the claim, they SHOULD send a `submit-credential` message.
 This message contains the attested credential.
@@ -534,6 +542,16 @@ These salts MUST be used only once and be generated using a cryptographic random
  * @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.KiltCredentialV1.html */
 type SubmitCredential = KiltCredentialV1
 ```
+
+#### 5.b Attester rejects credential
+
+In case the attester does not approve the attestation request, no information about this appears on the blockchain.
+The extension can only get this information directly from the attester.
+A rejection message could be useful to help the user to remove the corresponding credential from the extension.
+
+Once the decision not to approve the attestation request has been made, the attester SHOULD send a [rejection message](#rejections).
+If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it as rejected and SHOULD offer the user the option to remove it.
+
 
 ### Verification Workflow
 
