@@ -9,9 +9,9 @@
 A browser extension that stores and uses the identities and credentials of the user.
 When the user visits a webpage, the extension injects its API into this webpage.
 
-### dApp
+### dApp – Decentralized application
 
-Decentralized application – a website that can interact with the extension via the API it exposes.
+A website that can interact with the extension via the API it exposes.
 The example dApps in this specification are Attester and Verifier.
 
 
