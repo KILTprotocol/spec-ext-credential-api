@@ -292,7 +292,7 @@ so the extension SHOULD provide means to cancel an individual step, while the dA
 The user also always has the last resort of simply closing the dApp page.
 
 The extension SHOULD report the closure of the popup (by the user or because of the switch to another app)
-as a cancellation, not an error.
+as a rejection, not an error.
 
 On receiving an error or a rejection from the dApp, the extension SHOULD offer options to retry and to cancel.
 On receiving an error or a rejection from the extension, the dApp SHOULD highlight the option to cancel the flow
@@ -307,7 +307,7 @@ Okay, it did not, so I cannot provide what they want, but I do not want to cance
 In a different scenario, the extension MAY try to detect the trustworthiness of the dApp
 by requesting from it some credentials, and the dApp MAY reject these requests.
 The extension MAY use the results of this exchange to indicate to the user its level of confidence
-in the trustworthiness of the dApp, for example, as the browsers do for SSL and EV certificates.
+in the trustworthiness of the dApp, for example, as the browsers do for TLS certificates.
 
 ```typescript
 interface Rejection {
