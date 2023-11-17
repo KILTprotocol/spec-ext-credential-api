@@ -425,8 +425,11 @@ This `subject` value being provided means that the attester is willing to issue 
 If the `'submit-terms'` message included an unknown DID or none at all as `subject`, the extension MUST ask the user to choose the DID for which the credential will be issued.
 Otherwise, the extension SHOULD NOT offer the choice, but still MUST get the user’s consent to use this DID.
 
+The extension MUST generate the `salt` values according to the [KiltAttestationProofV1 specification](https://github.com/KILTprotocol/spec-KiltCredentialV1/blob/main/ProofTypes/KiltAttestationProofV1.md#salt) and provide them in the `request-attestation` message.
+
 The chosen or confirmed DID URI will be submitted as the `subject` field of the `claim` in the `'request-attestation'` message.
 The attester MUST only issue a credential to this DID.
+The attester MUST use the provided `salt` values for the proof of the credential.
 The attester MAY reject the request if this DID is different from the `subject` in the previous `'submit-terms'` message.
 
 
@@ -443,6 +446,10 @@ interface RequestAttestation {
 
         /** contents of the proposed credential */
         contents: object
+
+        /** The salts to use for the KiltAttestationProofV1
+         * @link https://github.com/KILTprotocol/spec-KiltCredentialV1/blob/main/ProofTypes/KiltAttestationProofV1.md#salt */
+        salt: string[]
 
         /** DID URI to issue the credential for */
         subject: string
