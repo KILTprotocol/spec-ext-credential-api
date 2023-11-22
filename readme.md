@@ -217,13 +217,7 @@ Third-party code tampering with these calls is pointless:
 Some of the data types are not provided inside this specification.
 Refer to the [kilt-extension-api](https://github.com/KILTprotocol/kilt-extension-api) and the [SDK](https://github.com/KILTprotocol/sdk-js) for a definition.
 
-* [IQuote](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L18)
-* [IQuoteAttesterSigned](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L30)
-* [IQuoteAgreement](https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L38)
-* [VerifiablePresentation](https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html)
-* [KiltCredentialV1](https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.KiltCredentialV1.html)
-
-### Metadata
+#### Message
 
 ```typescript
 interface Message {
@@ -256,6 +250,124 @@ interface Message {
 }
 ```
 
+#### Quote
+
+```javascript
+interface CostBreakdown {
+    tax: Record<string, unknown>
+    net: number
+    gross: number
+}
+
+interface Quote {
+    cost: CostBreakdown
+    currency: string
+    timeframe: string
+    termsAndConditions: string
+}
+```
+
+#### Proposed Verifiable Credential
+
+The `ProposedCredential` is a partial `KiltCredentialV1`.
+The attester proposes the content of structure of the credential.
+Since the attester might not yet know the subjects DID, the `credentialSubject.id` property is optional.
+The credential is also not attested, therefore the `proof` and `issuanceDate` properties are missing.
+
+```javascript
+interface ProposedCredential {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.kilt.io/contexts/credentials"
+    ],
+    type: [
+        "VerifiableCredential",
+        "KiltCredentialV1",
+        "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf"
+    ],
+    id: string,
+    nonTransferable: true,
+    credentialSubject: {
+        "@context": {
+            "@vocab": "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf#"
+        },
+        id?: string,
+        [key: string]: any
+    },
+    issuer: string,
+    federatedTrustModel: FederatedTrust[],
+    credentialStatus: CredentialStatus,
+    credentialSchema: {
+        id: "ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z",
+        type: "JsonSchema2023"
+    },
+}
+```
+
+#### Agreed Verifiable Credential
+
+The `AgreedCredential` is a partial `KiltCredentialV1`.
+It previews the credential that both the claimer and attester agreed upon.
+Since the `AgreedCredential` is not attested, it doesn't contain the `issuanceDate` and only a partial `proof`.
+The `proof` contains the `type` which is currently limited to `KiltAttestationProofV1` and the `salt` and `commitments`.
+Note that the credential subject MUST be present.
+
+```javascript
+interface AgreedCredential {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.kilt.io/contexts/credentials"
+    ],
+    type: [
+        "VerifiableCredential",
+        "KiltCredentialV1",
+        "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf"
+    ],
+    id: string,
+    nonTransferable: true,
+    credentialSubject: {
+        "@context": {
+            "@vocab": "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf#"
+        },
+        id: string,
+        [key: string]: any
+    },
+    issuer: string,
+    federatedTrustModel: FederatedTrust[],
+    credentialStatus: CredentialStatus,
+    credentialSchema: {
+        id: "ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z",
+        type: "JsonSchema2023"
+    },
+    proof: {
+        type: "KiltAttestationProofV1"
+        commitments: string[]
+        salt: string[]
+    }
+}
+```
+
+#### Credential Status
+
+```javascript
+interface CredentialStatus {
+    id: string
+    type: "KiltRevocationStatusV1"
+}
+```
+
+#### Federated Trust
+
+```javascript
+interface FederatedTrust {
+    id: string
+    type: "KiltAttesterDelegationV1" | "KiltAttesterLegitimationV1"
+}
+```
+
+#### VCDataIntegrity
+
+A proof that follows the [VC Data Integrity specification](https://www.w3.org/TR/vc-data-integrity/#proofs).
 
 ### Encryption
 
@@ -380,6 +492,11 @@ The processing of the optional field `quote` is currently unspecified.
 If the attester requires payment to issue this credential, the `quote` MUST be present.
 If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
 
+The communication channel isn't required to provide non-repudiation.
+In order for the user to store a proof of the agreed upon terms, the attester MUST sign the `SubmitTerms` object.
+The attached proof MUST follow the [VC Data Integrity specification](https://www.w3.org/TR/vc-data-integrity/#proofs).
+The extension SHOULD store the signed `SubmitTerms` object in case it is needed for later dispute resolution.
+
 DApp and extension MAY start verification workflows before this event.
 The extension MAY start verification workflows after this event.
 
@@ -390,27 +507,12 @@ interface SubmitTerms {
      *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICType.html */
     cTypes: ICType[]
 
-    claim: {
-        /** Hash of the CType */
-        cTypeHash: string
-
-        /** contents of the proposed credential */
-        contents: object
-
-        /** optional DID URI the credential will be issued for */
-        subject?: string
-    }
+    claim: ProposedCredential
 
     /** optional attester-signed binding
      *  @link https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L30 */
-    quote?: IQuoteAttesterSigned
-
-    /** optional ID of the DelegationNode of the attester */
-    delegationId?: string
-
-    /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
-    legitimations?: VerifiablePresentation
+    quote?: IQuote
+    proof: VCDataIntegrity
 }
 ```
 
@@ -426,6 +528,13 @@ If the `'submit-terms'` message included an unknown DID or none at all as `subje
 Otherwise, the extension SHOULD NOT offer the choice, but still MUST get the user’s consent to use this DID.
 
 The extension MUST generate the `salt` values according to the [KiltAttestationProofV1 specification](https://github.com/KILTprotocol/spec-KiltCredentialV1/blob/main/ProofTypes/KiltAttestationProofV1.md#salt) and provide them in the `request-attestation` message.
+The extension MUST provide the `delegationId` if the attester provided one in the previous step.
+
+The extension used a temporary DID for the communication channel.
+Since this DID is only used for a single interaction, it is not possible for the attester to verify the identity of the claimer until this step.
+In order for the attester to hold a proof that the claimer agreed to the terms, the claimer MUST sign the `RequestAttestation` object using the DID specified in the credential subject (field `claim.credentialSubject.id`).
+The attester SHOULD store the signed `RequestAttestation` object in case it is needed for later dispute resolution.
+
 
 The chosen or confirmed DID URI will be submitted as the `subject` field of the `claim` in the `'request-attestation'` message.
 The attester MUST only issue a credential to this DID.
@@ -440,30 +549,11 @@ The attester MAY reject the request if this DID is different from the `subject` 
 
 ```typescript
 interface RequestAttestation {
-    claim: {
-        /** Hash of the CType */
-        cTypeHash: string
-
-        /** contents of the proposed credential */
-        contents: object
-
-        /** The salts to use for the KiltAttestationProofV1
-         * @link https://github.com/KILTprotocol/spec-KiltCredentialV1/blob/main/ProofTypes/KiltAttestationProofV1.md#salt */
-        salt: string[]
-
-        /** DID URI to issue the credential for */
-        subject: string
-
-        /** optional ID of the DelegationNode of the attester to be used in the attestation */
-        delegationId?: string
-
-        /** optional array of credentials of the attester to include in the attestation
-         *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
-        legitimations: VerifiablePresentation
-    },
+    claim: AgreedCredential
     /** quote agreement signed by the claimer
      *  @link https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L38 */
-    quote?: IQuoteAgreement
+    quote?: IQuote
+    proof: VCDataIntegrity
 }
 ```
 
@@ -534,7 +624,7 @@ The extension MUST send a [rejection message](#rejections) if the user cancels o
 
 #### 5.a Attester submits credential
 
-If the attester successfully verified the claim, they SHOULD send a `submit-credential` message.
+If the attester successfully verified the claim, they MUST issue an attestation and SHOULD send a `submit-credential` message.
 This message contains the attested credential.
 To build the credential, the attester will generate the salts which are used in the selective disclosure scheme.
 These salts MUST be used only once and be generated using a cryptographic random generator.
