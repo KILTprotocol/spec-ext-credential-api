@@ -679,8 +679,6 @@ If the `subject` field is absent, all possible credentials can be used.
 The `challenge` MUST be used only once.
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering.
 
-DApp and extension MAY start verification workflows after this event.
-
 ```typescript
 interface RequestCredential {
     cTypes: [
@@ -691,7 +689,10 @@ interface RequestCredential {
             /** optional list of DIDs of attesters trusted by this verifier */
             trustedAttesters?: string[]
 
-            /** list of credential attributes which MUST be included when submitting the credential */
+            /**
+             * list of credential attributes which MUST be included when submitting the credential.
+             * The properties are identified using JSONPath.
+             */
             requiredProperties: string[]
         }
     ]
@@ -702,22 +703,13 @@ interface RequestCredential {
     /** 24 random bytes as hexadecimal */
     challenge: string
 }
-
-const exampleRequest: RequestCredential = {
-    "cTypes": [
-        {
-            "cTypeHash": "0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-            "trustedAttesters": [
-                "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
-            ],
-            "requiredProperties": [
-                "name"
-            ]
-        }
-    ],
-    "challenge": "9f1ceac971cce4c61505974f411a9db432949531abe10dde"
-}
 ```
+
+##### Required Properties
+
+The `cTypes.requiredProperties` property specifies which fields of the credential MUST be included in the presentation.
+All fields which are not covered by the selective disclosure scheme are mandatory and MUST not be listed in the `requiredProperties`.
+
 
 #### 2. Extension or dApp sends credential
 
