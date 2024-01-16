@@ -523,9 +523,7 @@ interface SubmitTerms {
 
     claim: ProposedCredential
 
-    /** optional issuer-signed binding
-     *  @link https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L30 */
-    quote?: IQuote
+    quote?: Quote
     proof: VCDataIntegrity
 }
 ```
@@ -565,9 +563,7 @@ The issuer MAY reject the request if this DID is different from the `subject` in
 ```typescript
 interface RequestAttestation {
     claim: AgreedCredential
-    /** quote agreement signed by the claimer
-     *  @link https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L38 */
-    quote?: IQuote
+    quote?: Quote
     proof: VCDataIntegrity
 }
 ```
