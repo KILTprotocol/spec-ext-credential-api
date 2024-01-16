@@ -536,9 +536,10 @@ interface SubmitTerms {
 The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
-The previous message in the flow - `'submit-terms'` - contains the `claim` with an optional `subject` field containing a DID URI.
-This `subject` value being provided means that the issuer is willing to issue the credential for this specific DID.
-If the `'submit-terms'` message included an unknown DID or none at all as `subject`, the extension MUST ask the user to choose the DID for which the credential will be issued.
+The previous message in the flow - `'submit-terms'` - contains an `SubmitTerms` object which has an optional property `/claim/credentialSubject/id`.
+This value being provided means that the issuer is willing to issue the credential for this specific DID.
+If the `'submit-terms'` message included an unknown DID the extension SHOULD respond with the rejection message described in "2.b Extension rejects credential".
+If the property was undefined, the extension MUST ask the user to choose the DID for which the credential will be issued.
 Otherwise, the extension SHOULD NOT offer the choice, but still MUST get the user’s consent to use this DID.
 
 The extension MUST generate the `salt` values according to the [KiltAttestationProofV1 specification](https://github.com/KILTprotocol/spec-KiltCredentialV1/blob/main/ProofTypes/KiltAttestationProofV1.md#salt) and provide them in the `request-attestation` message.
