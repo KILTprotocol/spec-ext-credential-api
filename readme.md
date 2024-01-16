@@ -285,7 +285,6 @@ interface ProposedCredential {
         "KiltCredentialV1",
         `kilt:ctype:${string}`
     ],
-    id: string,
     nonTransferable: true,
     credentialSubject: {
         "@context": {
@@ -351,6 +350,7 @@ interface AgreedCredential {
 
 ```typescript
 interface CredentialStatus {
+    /* The root hash of the attestation entry on the Spiritnet blockchain */
     id: string
     type: "KiltRevocationStatusV1"
 }
@@ -359,9 +359,22 @@ interface CredentialStatus {
 #### Federated Trust
 
 ```typescript
-interface FederatedTrust {
+type FederatedTrust = DelegatedTrust | LegitimatedTrust
+
+interface DelegatedTrust {
+    /* The Id of the delegation node that is own by the issuer on the Spiritnet
+     * blockchain.
+     */
     id: string
-    type: "KiltAttesterDelegationV1" | "KiltAttesterLegitimationV1"
+    type: "KiltAttesterDelegationV1"
+}
+
+interface LegitimatedTrust {
+    /* The root hash of the attestation entry on the Spiritnet blockchain for 
+     * the provided credential that proofs the legitimacy of the issuer
+     */
+    id: string
+    type: "KiltAttesterLegitimationV1"
 }
 ```
 
@@ -495,6 +508,8 @@ If the issuer does not require payment to issue this credential, the `quote` MUS
 The communication channel isn't required to provide non-repudiation.
 In order for the user to store a proof of the agreed upon terms, the issuer MUST sign the `SubmitTerms` object.
 The attached proof MUST follow the [VC Data Integrity specification](https://www.w3.org/TR/vc-data-integrity/#proofs).
+Both the dApp and extension should support the following cryptographic suite: `sr25519-jcs-2023`, `eddsa-jcs-2022` and `ES256K-jcs-2023`.
+If the extension or dApp receives a proof with an unsupported cryptographic suite, they MUST respond with a [rejection message](#rejections) with name `unknown-cryptographic-suite`.
 The extension SHOULD store the signed `SubmitTerms` object in case it is needed for later dispute resolution.
 
 DApp and extension MAY start verification workflows before this event.
@@ -567,6 +582,7 @@ If any of the checks have failed, the issuer MUST NOT request the payment via an
 
 The user might not agree to the terms that the issuer proposed.
 If the user rejects the terms, the extension MUST send a [rejection message](#rejections), referencing the `submit-terms` message in the `in-reply-to` field of the message object.
+The rejection message MUST have the name `rejected-terms`.
 
 #### 3. Optional: Issuer requests payment
 
@@ -620,7 +636,7 @@ interface PaymentConfirmation {
 #### 4.b Optional: Extension rejects payment
 
 The extension MUST send a [rejection message](#rejections) if the user cancels or rejects the payment.
-
+The rejection message MUST have the name `rejected-payment`.
 
 #### 5.a Issuer submits credential
 
@@ -647,6 +663,7 @@ The extension can only get this information directly from the issuer.
 A rejection message could be useful to help the user to remove the corresponding credential from the extension.
 
 Once the decision not to approve the attestation request has been made, the issuer SHOULD send a [rejection message](#rejections).
+The rejection message MUST have the name `rejected-issuance`.
 If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it as rejected and SHOULD offer the user the option to remove it.
 
 
