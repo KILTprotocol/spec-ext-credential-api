@@ -12,7 +12,7 @@ When the user visits a webpage, the extension injects its API into this webpage.
 ### dApp
 
 Decentralized application – a website that can interact with the extension via the API it exposes.
-The example dApps in this specification are Attester and Verifier.
+The example dApps in this specification are issuer and Verifier.
 
 
 ## Specification of requirements
@@ -270,8 +270,8 @@ interface Quote {
 #### Proposed Verifiable Credential
 
 The `ProposedCredential` is a partial `KiltCredentialV1`.
-The attester proposes the content of structure of the credential.
-Since the attester might not yet know the subjects DID, the `credentialSubject.id` property is optional.
+The issuer proposes the content and structure of the credential.
+Since the issuer might not yet know the subjects DID, the `credentialSubject.id` property is optional.
 The credential is also not attested, therefore the `proof` and `issuanceDate` properties are missing.
 
 ```javascript
@@ -307,7 +307,7 @@ interface ProposedCredential {
 #### Agreed Verifiable Credential
 
 The `AgreedCredential` is a partial `KiltCredentialV1`.
-It previews the credential that both the claimer and attester agreed upon.
+It previews the credential that both the claimer and issuer agreed upon.
 Since the `AgreedCredential` is not attested, it doesn't contain the `issuanceDate` and only a partial `proof`.
 The `proof` contains the `type` which is currently limited to `KiltAttestationProofV1` and the `salt` and `commitments`.
 Note that the credential subject MUST be present.
@@ -416,7 +416,7 @@ On receiving an error or a rejection from the extension, the dApp SHOULD highlig
 and MAY offer an option to trigger a retry. However, cancelling a step SHOULD NOT automatically cancel the flow,
 since we expect many actions to be trial and error explorations of possibilities, as in the following example.
 
-When the attester requests credentials from the user via the nested verification workflow,
+When the issuer requests credentials from the user via the nested verification workflow,
 their CTypes are compared using hashes, which the user cannot conveniently do manually in advance.
 The user’s train of thought could be: "They want some kind of credential, let’s see if mine would suit them.
 Okay, it did not, so I cannot provide what they want, but I do not want to cancel the whole flow."
@@ -474,7 +474,7 @@ interface Error {
 
 ### Attestation Workflow
 
-#### 1. Attester proposes credential
+#### 1. Issuer proposes credential
 
 |              |                     |
 | ------------ | ------------------- |
@@ -483,17 +483,17 @@ interface Error {
 
 Because of the anticipated multitude of various CTypes, the extension is not expected to provide a UI
 to create and fill in the claims. The role of the extension is to let the user authorize and sign off
-on the claims prepared by the attester.
+on the claims prepared by the issuer.
 
-The attester SHOULD provide a UI to create and fill in the details of the claim.
+The issuer SHOULD provide a UI to create and fill in the details of the claim.
 
 The processing of the optional field `quote` is currently unspecified.
 
-If the attester requires payment to issue this credential, the `quote` MUST be present.
-If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
+If the issuer requires payment to issue this credential, the `quote` MUST be present.
+If the issuer does not require payment to issue this credential, the `quote` MUST NOT be present.
 
 The communication channel isn't required to provide non-repudiation.
-In order for the user to store a proof of the agreed upon terms, the attester MUST sign the `SubmitTerms` object.
+In order for the user to store a proof of the agreed upon terms, the issuer MUST sign the `SubmitTerms` object.
 The attached proof MUST follow the [VC Data Integrity specification](https://www.w3.org/TR/vc-data-integrity/#proofs).
 The extension SHOULD store the signed `SubmitTerms` object in case it is needed for later dispute resolution.
 
@@ -509,7 +509,7 @@ interface SubmitTerms {
 
     claim: ProposedCredential
 
-    /** optional attester-signed binding
+    /** optional issuer-signed binding
      *  @link https://github.com/KILTprotocol/kilt-extension-api/blob/4c0c2f93958ab72b59b72057a6e9b6aedb5fccef/src/types/Quote.ts#L30 */
     quote?: IQuote
     proof: VCDataIntegrity
@@ -523,23 +523,23 @@ The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
 The previous message in the flow - `'submit-terms'` - contains the `claim` with an optional `subject` field containing a DID URI.
-This `subject` value being provided means that the attester is willing to issue the credential for this specific DID.
+This `subject` value being provided means that the issuer is willing to issue the credential for this specific DID.
 If the `'submit-terms'` message included an unknown DID or none at all as `subject`, the extension MUST ask the user to choose the DID for which the credential will be issued.
 Otherwise, the extension SHOULD NOT offer the choice, but still MUST get the user’s consent to use this DID.
 
 The extension MUST generate the `salt` values according to the [KiltAttestationProofV1 specification](https://github.com/KILTprotocol/spec-KiltCredentialV1/blob/main/ProofTypes/KiltAttestationProofV1.md#salt) and provide them in the `request-attestation` message.
-The extension MUST provide the `delegationId` if the attester provided one in the previous step.
+The extension MUST provide the `delegationId` if the issuer provided one in the previous step.
 
 The extension used a temporary DID for the communication channel.
-Since this DID is only used for a single interaction, it is not possible for the attester to verify the identity of the claimer until this step.
-In order for the attester to hold a proof that the claimer agreed to the terms, the claimer MUST sign the `RequestAttestation` object using the DID specified in the credential subject (field `claim.credentialSubject.id`).
-The attester SHOULD store the signed `RequestAttestation` object in case it is needed for later dispute resolution.
+Since this DID is only used for a single interaction, it is not possible for the issuer to verify the identity of the claimer until this step.
+In order for the issuer to hold a proof that the claimer agreed to the terms, the claimer MUST sign the `RequestAttestation` object using the DID specified in the credential subject (field `claim.credentialSubject.id`).
+The issuer SHOULD store the signed `RequestAttestation` object in case it is needed for later dispute resolution.
 
 
 The chosen or confirmed DID URI will be submitted as the `subject` field of the `claim` in the `'request-attestation'` message.
-The attester MUST only issue a credential to this DID.
-The attester MUST use the provided `salt` values for the proof of the credential.
-The attester MAY reject the request if this DID is different from the `subject` in the previous `'submit-terms'` message.
+The issuer MUST only issue a credential to this DID.
+The issuer MUST use the provided `salt` values for the proof of the credential.
+The issuer MAY reject the request if this DID is different from the `subject` in the previous `'submit-terms'` message.
 
 
 |              |                         |
@@ -559,31 +559,31 @@ interface RequestAttestation {
 
 The dApp MAY start verification workflows after this event.
 
-However, the attester MUST perform checks that the complete data necessary for actual attestation is in place
+However, the issuer MUST perform checks that the complete data necessary for actual attestation is in place
 and properly formatted before sending the `'request-payment'` message or requesting the user to pay via other means.
-If any of the checks have failed, the attester MUST NOT request the payment via any means.
+If any of the checks have failed, the issuer MUST NOT request the payment via any means.
 
 #### 2.b Extension rejects credential
 
-The user might not agree to the terms that the attester proposed.
+The user might not agree to the terms that the issuer proposed.
 If the user rejects the terms, the extension MUST send a [rejection message](#rejections), referencing the `submit-terms` message in the `in-reply-to` field of the message object.
 
-#### 3. Optional: Attester requests payment
+#### 3. Optional: Issuer requests payment
 
 This specification does not prescribe the means of payment.
 
-The attester MUST NOT send this message if it does not require payment to issue this credential.
-The attester MUST NOT send this message if the payment happens via the attester website.
+The issuer MUST NOT send this message if it does not require payment to issue this credential.
+The issuer MUST NOT send this message if the payment happens via the issuer website.
 
-This attester MAY send this message if it wants the user to transfer payment in KILT Coins by themselves
+This issuer MAY send this message if it wants the user to transfer payment in KILT Coins by themselves
 without interrupting the flow.
 
 The extension MAY start verification workflows after this event.
 
 Upon receiving the `'request-payment'` message the extension SHOULD show the user the interface
-to authorize the transfer of the payment to the attester.
+to authorize the transfer of the payment to the issuer.
 The previously provided `quote` contains the amount to be paid (`cost.gross`)
-and the recipient address (`attesterAddress`).
+and the recipient address (`issuerAddress`).
 
 |              |                     |
 | ------------ | ------------------- |
@@ -600,7 +600,7 @@ type RequestForPayment = null
 #### 4.a Optional: Extension confirms payment
 
 After the user has authorized the payment and it has been transferred, the extension MUST confirm the transfer
-to the attester by sending the `'confirm-payment'` message.
+to the issuer by sending the `'confirm-payment'` message.
 
 |              |                     |
 | ------------ | ------------------- |
@@ -622,11 +622,11 @@ interface PaymentConfirmation {
 The extension MUST send a [rejection message](#rejections) if the user cancels or rejects the payment.
 
 
-#### 5.a Attester submits credential
+#### 5.a Issuer submits credential
 
-If the attester successfully verified the claim, they MUST issue an attestation and SHOULD send a `submit-credential` message.
+If the issuer successfully verified the claim, they MUST issue an attestation and SHOULD send a `submit-credential` message.
 This message contains the attested credential.
-To build the credential, the attester will generate the salts which are used in the selective disclosure scheme.
+To build the credential, the issuer will generate the salts which are used in the selective disclosure scheme.
 These salts MUST be used only once and be generated using a cryptographic random generator.
 
 |              |                       |
@@ -640,13 +640,13 @@ These salts MUST be used only once and be generated using a cryptographic random
 type SubmitCredential = KiltCredentialV1
 ```
 
-#### 5.b Attester rejects credential
+#### 5.b Issuer rejects credential
 
-In case the attester does not approve the attestation request, no information about this appears on the blockchain.
-The extension can only get this information directly from the attester.
+In case the issuer does not approve the attestation request, no information about this appears on the blockchain.
+The extension can only get this information directly from the issuer.
 A rejection message could be useful to help the user to remove the corresponding credential from the extension.
 
-Once the decision not to approve the attestation request has been made, the attester SHOULD send a [rejection message](#rejections).
+Once the decision not to approve the attestation request has been made, the issuer SHOULD send a [rejection message](#rejections).
 If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it as rejected and SHOULD offer the user the option to remove it.
 
 
@@ -686,8 +686,8 @@ interface RequestCredential {
             /** The hash of the CType */
             cTypeHash: string
 
-            /** optional list of DIDs of attesters trusted by this verifier */
-            trustedAttesters?: string[]
+            /** optional list of DIDs of issuers trusted by this verifier */
+            trustedissuers?: string[]
 
             /**
              * list of credential attributes which MUST be included when submitting the credential.
@@ -762,7 +762,7 @@ In the real world, trust relies on societal mechanisms and is usually distribute
 An example from the internet is the Extended Validation SSL certificates signed by Certification Authorities
 from a hard-coded list. This approach does not translate directly into the decentralized blockchain ecosystem.
 
-Every verifier can list their trusted attesters, thus delegating them trust. One downside to this solution is that the list
+Every verifier can list their trusted issuers, thus delegating them trust. One downside to this solution is that the list
 will likely be quite long, and making the user choose from it would result in a poor user experience. A more serious issue
 with this approach is that the verifier itself might be a part of a malicious network and thus cannot be trusted.
 
