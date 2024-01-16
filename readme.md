@@ -252,7 +252,7 @@ interface Message {
 
 #### Quote
 
-```javascript
+```typescript
 interface CostBreakdown {
     tax: Record<string, unknown>
     net: number
@@ -274,7 +274,7 @@ The issuer proposes the content and structure of the credential.
 Since the issuer might not yet know the subjects DID, the `credentialSubject.id` property is optional.
 The credential is also not attested, therefore the `proof` and `issuanceDate` properties are missing.
 
-```javascript
+```typescript
 interface ProposedCredential {
     "@context": [
         "https://www.w3.org/2018/credentials/v1",
@@ -312,7 +312,7 @@ Since the `AgreedCredential` is not attested, it doesn't contain the `issuanceDa
 The `proof` contains the `type` which is currently limited to `KiltAttestationProofV1` and the `salt` and `commitments`.
 Note that the credential subject MUST be present.
 
-```javascript
+```typescript
 interface AgreedCredential {
     "@context": [
         "https://www.w3.org/2018/credentials/v1",
@@ -349,7 +349,7 @@ interface AgreedCredential {
 
 #### Credential Status
 
-```javascript
+```typescript
 interface CredentialStatus {
     id: string
     type: "KiltRevocationStatusV1"
@@ -358,7 +358,7 @@ interface CredentialStatus {
 
 #### Federated Trust
 
-```javascript
+```typescript
 interface FederatedTrust {
     id: string
     type: "KiltAttesterDelegationV1" | "KiltAttesterLegitimationV1"
