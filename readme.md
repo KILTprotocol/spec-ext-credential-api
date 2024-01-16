@@ -691,7 +691,8 @@ interface RequestCredential {
 
             /**
              * list of credential attributes which MUST be included when submitting the credential.
-             * The properties are identified using JSONPath.
+             * The properties are identified using JSON Pointers:
+             * https://datatracker.ietf.org/doc/html/rfc6901
              */
             requiredProperties: string[]
         }
