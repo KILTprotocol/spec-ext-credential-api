@@ -327,7 +327,7 @@ interface AgreedCredential {
     nonTransferable: true,
     credentialSubject: {
         "@context": {
-            "@vocab": "kilt:ctype:0xf0fd09f9ed6233b2627d37eb5d6c528345e8945e0b610e70997ed470728b2ebf#"
+            "@vocab": `kilt:ctype:${string}#`
         },
         id: string,
         [key: string]: any
