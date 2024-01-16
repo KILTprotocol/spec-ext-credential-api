@@ -551,7 +551,7 @@ In order for the issuer to hold a proof that the claimer agreed to the terms, th
 The issuer SHOULD store the signed `RequestAttestation` object in case it is needed for later dispute resolution.
 
 
-The chosen or confirmed DID URI will be submitted as the `subject` field of the `claim` in the `'request-attestation'` message.
+The chosen or confirmed DID URI will be submitted as the `/claim/credentialSubject/id` property in the `'request-attestation'` message.
 The issuer MUST only issue a credential to this DID.
 The issuer MUST use the provided `salt` values for the proof of the credential.
 The issuer MAY reject the request if this DID is different from the `subject` in the previous `'submit-terms'` message.
