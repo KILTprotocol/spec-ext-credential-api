@@ -295,7 +295,6 @@ interface ProposedCredential {
     },
     issuer: string,
     federatedTrustModel: FederatedTrust[],
-    credentialStatus: CredentialStatus,
     credentialSchema: {
         id: "ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z",
         type: "JsonSchema2023"
