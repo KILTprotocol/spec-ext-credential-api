@@ -484,9 +484,19 @@ interface Error {
 ```
 
 
-### Attestation Workflow
+### Issuance Workflow
 
-#### 1. Issuer proposes credential
+Issuing a credential follows the following steps:
+
+1. The issuer proposes a credential and requests payment.
+2. The claimer agrees to the terms and pays the requested amount.
+3. The issuer submits the credential to the claimer.
+
+The only mandatory step in this flow is step 3.
+The issuer must submit the credential to the claimer.
+Payment and a signed agreement between the issuer and claimer are optional steps.
+
+#### 1. Optional: Issuer proposes credential
 
 |              |                     |
 | ------------ | ------------------- |
@@ -529,7 +539,7 @@ interface SubmitTerms {
 ```
 
 
-#### 2.a Extension requests credential
+#### 2.a Optional: Extension requests credential
 
 The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
@@ -638,8 +648,6 @@ The rejection message MUST have the name `rejected-payment`.
 
 If the issuer successfully verified the claim, they MUST issue an attestation and SHOULD send a `submit-credential` message.
 This message contains the attested credential.
-To build the credential, the issuer will generate the salts which are used in the selective disclosure scheme.
-These salts MUST be used only once and be generated using a cryptographic random generator.
 
 |              |                       |
 | ------------ | --------------------- |
