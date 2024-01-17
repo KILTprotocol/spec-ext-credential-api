@@ -708,7 +708,7 @@ interface RequestCredential {
             cTypeHash: string
 
             /** optional list of DIDs of issuers trusted by this verifier */
-            trustedissuers?: string[]
+            trustedIssuers?: string[]
 
             /**
              * list of credential attributes which MUST be included when submitting the credential.
