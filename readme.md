@@ -738,9 +738,8 @@ All fields which are not covered by the selective disclosure scheme are mandator
 The extension MUST only send the credential with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
-The `challenge` from the previous message MUST be used to create the [verifiable presentation](https://www.w3.org/TR/vc-data-model/#presentations-0)
-with the private key of the identity which owns the credential.
-This prevents replay attacks by confirming the ownership of this identity.
+The `challenge` from the previous message MUST be used to create the [verifiable presentation](https://www.w3.org/TR/vc-data-model/#presentations-0) with the private key of the identity which owns the credential.
+The challenge is added to the data integrity proof which prevents replay attacks by confirming the ownership of this identity.
 
 |              |                       |
 | ------------ | --------------------- |
