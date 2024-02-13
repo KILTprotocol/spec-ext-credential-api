@@ -1,4 +1,4 @@
-# KILT Credential API (Spec version 3.4)
+# KILT Credential API (Spec version 4.0)
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
@@ -12,7 +12,7 @@ When the user visits a webpage, the extension injects its API into this webpage.
 ### dApp
 
 Decentralized application – a website that can interact with the extension via the API it exposes.
-The example dApps in this specification are Attester and Verifier.
+The example dApps in this specification are issuer and Verifier.
 
 
 ## Specification of requirements
@@ -35,7 +35,7 @@ interface GlobalKilt {
         /** Versions of the various specifications this dApp adheres to */
         versions: {
             /** MUST equal the version of this specification the dApp adheres to */
-            credentials: '3.4'
+            credentials: '4.0'
         }
     }
 }
@@ -59,7 +59,7 @@ interface InjectedWindowProvider {
     version: string
 
     /** MUST equal the version of this specification the extension adheres to */
-    specVersion: '3.4'
+    specVersion: '4.0'
 }
 
 interface PubSubSession {
@@ -106,12 +106,12 @@ interface EncryptedMessage {
 
 The dApp MUST create the `window.kilt` object as early as possible to indicate its support of the API to the extension.
 This object MUST contain non-enumerable property `meta` being an object with a property `versions`,
-which is in turn an object containing property `credentials` with the value of string `'3.4'`.
+which is in turn an object containing property `credentials` with the value of string `'4.0'`.
 
 ```typescript
 window.kilt = {}
 Object.defineProperty(window.kilt, 'meta', {
-    value: { versions: { credentials: '3.4' } },
+    value: { versions: { credentials: '4.0' } },
     enumerable: false
 })
 ```
@@ -173,7 +173,7 @@ The absence of this value indicates that the dApp uses the Credentials specifica
     },
     name: 'My KILT credentials extension',
     version: '0.0.1',
-    specVersion: '3.4'
+    specVersion: '4.0'
 } as InjectedWindowProvider;
 ```
 
@@ -214,11 +214,10 @@ Third-party code tampering with these calls is pointless:
 
 ### Data types
 
-Definitions of data types, if not provided here, can be found in
-[the KILTProtocol SDK documentation](https://kiltprotocol.github.io/sdk-js/).
+Some of the data types are not provided inside this specification.
+Refer to the [kilt-extension-api](https://github.com/KILTprotocol/kilt-extension-api) and the [SDK](https://github.com/KILTprotocol/sdk-js) for a definition.
 
-
-### Metadata
+#### Message
 
 ```typescript
 interface Message {
@@ -245,12 +244,142 @@ interface Message {
     /** ID of the message this message responds to */
     inReplyTo?: string
 
-    /** when this message B is a response to the message A,
+    /** A list of message IDs of previous messages. When this message B is a response to the message A,
      *  B.references = [...A.references, A.inReplyTo] */
     references?: string[]
 }
 ```
 
+#### Quote
+
+```typescript
+interface CostBreakdown {
+    tax: Record<string, unknown>
+    net: number
+    gross: number
+}
+
+interface Quote {
+    cost: CostBreakdown
+    currency: string
+    timeframe: string
+    termsAndConditions: string
+}
+```
+
+#### Proposed Verifiable Credential
+
+The `ProposedCredential` is a partial `KiltCredentialV1`.
+The issuer proposes the content and structure of the credential.
+Since the issuer might not yet know the subjects DID, the `credentialSubject.id` property is optional.
+The credential is also not attested, therefore the `proof` and `issuanceDate` properties are missing.
+
+```typescript
+interface ProposedCredential {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.kilt.io/contexts/credentials"
+    ],
+    type: [
+        "VerifiableCredential",
+        "KiltCredentialV1",
+        `kilt:ctype:${string}`
+    ],
+    nonTransferable: true,
+    credentialSubject: {
+        "@context": {
+            "@vocab": `kilt:ctype:${string}#`
+        },
+        id?: string,
+        [key: string]: any
+    },
+    issuer: string,
+    federatedTrustModel: FederatedTrust[],
+    credentialSchema: {
+        id: "ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z",
+        type: "JsonSchema2023"
+    },
+}
+```
+
+#### Agreed Verifiable Credential
+
+The `AgreedCredential` is a partial `KiltCredentialV1`.
+It previews the credential that both the claimer and issuer agreed upon.
+Since the `AgreedCredential` is not attested, it doesn't contain the `issuanceDate` and only a partial `proof`.
+The `proof` contains the `type` which is currently limited to `KiltAttestationProofV1` and the `salt` and `commitments`.
+Note that the credential subject MUST be present.
+
+```typescript
+interface AgreedCredential {
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.kilt.io/contexts/credentials"
+    ],
+    type: [
+        "VerifiableCredential",
+        "KiltCredentialV1",
+        `kilt:ctype:${string}`
+    ],
+    id: string,
+    nonTransferable: true,
+    credentialSubject: {
+        "@context": {
+            "@vocab": `kilt:ctype:${string}#`
+        },
+        id: string,
+        [key: string]: any
+    },
+    issuer: string,
+    federatedTrustModel: FederatedTrust[],
+    credentialStatus: CredentialStatus,
+    credentialSchema: {
+        id: "ipfs://QmRpbcBsAPLCKUZSNncPiMxtVfM33UBmudaCMQV9K3FD5z",
+        type: "JsonSchema2023"
+    },
+    proof: {
+        type: "KiltAttestationProofV1"
+        commitments: string[]
+        salt: string[]
+    }
+}
+```
+
+#### Credential Status
+
+```typescript
+interface CredentialStatus {
+    /* The root hash of the attestation entry on the Spiritnet blockchain */
+    id: string
+    type: "KiltRevocationStatusV1"
+}
+```
+
+#### Federated Trust
+
+```typescript
+type FederatedTrust = DelegatedTrust | LegitimatedTrust
+
+interface DelegatedTrust {
+    /* The Id of the delegation node that is own by the issuer on the Spiritnet
+     * blockchain.
+     */
+    id: string
+    type: "KiltAttesterDelegationV1"
+}
+
+interface LegitimatedTrust {
+    /* The root hash of the attestation entry on the Spiritnet blockchain for 
+     * the provided credential that proofs the legitimacy of the issuer
+     */
+    id: string
+    type: "KiltAttesterLegitimationV1"
+}
+```
+
+#### VCDataIntegrity
+
+A proof that follows the [VC Data Integrity specification](https://www.w3.org/TR/vc-data-integrity/#proofs).
 
 ### Encryption
 
@@ -273,10 +402,10 @@ After parsing this JSON the recipient MUST ensure that the `sender` field contai
 
 ### Rejections
 
-|||
-|-|-|
-| direction | `extension <-> dApp` |
-| message_type | `'reject'` |
+|              |                      |
+| ------------ | -------------------- |
+| direction    | `extension <-> dApp` |
+| message_type | `'reject'`           |
 
 Rejection messages signal the intentional cancelling of an individual step in the flow.
 
@@ -299,7 +428,7 @@ On receiving an error or a rejection from the extension, the dApp SHOULD highlig
 and MAY offer an option to trigger a retry. However, cancelling a step SHOULD NOT automatically cancel the flow,
 since we expect many actions to be trial and error explorations of possibilities, as in the following example.
 
-When the attester requests credentials from the user via the nested verification workflow,
+When the issuer requests credentials from the user via the nested verification workflow,
 their CTypes are compared using hashes, which the user cannot conveniently do manually in advance.
 The user’s train of thought could be: "They want some kind of credential, let’s see if mine would suit them.
 Okay, it did not, so I cannot provide what they want, but I do not want to cancel the whole flow."
@@ -322,10 +451,10 @@ interface Rejection {
 
 ### Errors
 
-|||
-|-|-|
-| direction | `extension <-> dApp` |
-| message_type | `'error'` |
+|              |                      |
+| ------------ | -------------------- |
+| direction    | `extension <-> dApp` |
+| message_type | `'error'`            |
 
 Error messages signal unintentional programming errors which happened during the processing of the incoming messages
 or when constructing a response message.
@@ -355,25 +484,42 @@ interface Error {
 ```
 
 
-### Attestation Workflow
+### Issuance Workflow
 
-#### 1. Attester proposes credential
+Issuing a credential follows the following steps:
 
-|||
-|-|-|
-| direction | `dApp -> extension` |
-| message_type | `'submit-terms'` |
+1. The issuer proposes a credential and requests payment.
+2. The claimer agrees to the terms and pays the requested amount.
+3. The issuer submits the credential to the claimer.
+
+The only mandatory step in this flow is step 3.
+The issuer must submit the credential to the claimer.
+Payment and a signed agreement between the issuer and claimer are optional steps.
+
+#### 1. Optional: Issuer proposes credential
+
+|              |                     |
+| ------------ | ------------------- |
+| direction    | `dApp -> extension` |
+| message_type | `'submit-terms'`    |
 
 Because of the anticipated multitude of various CTypes, the extension is not expected to provide a UI
 to create and fill in the claims. The role of the extension is to let the user authorize and sign off
-on the claims prepared by the attester.
+on the claims prepared by the issuer.
 
-The attester SHOULD provide a UI to create and fill in the details of the claim.
+The issuer SHOULD provide a UI to create and fill in the details of the claim.
 
 The processing of the optional field `quote` is currently unspecified.
 
-If the attester requires payment to issue this credential, the `quote` MUST be present.
-If the attester does not require payment to issue this credential, the `quote` MUST NOT be present.
+If the issuer requires payment to issue this credential, the `quote` MUST be present.
+If the issuer does not require payment to issue this credential, the `quote` MUST NOT be present.
+
+The communication channel isn't required to provide non-repudiation.
+In order for the user to store a proof of the agreed upon terms, the issuer MUST sign the `SubmitTerms` object.
+The attached proof MUST follow the [VC Data Integrity specification](https://www.w3.org/TR/vc-data-integrity/#proofs).
+Both the dApp and extension should support the following cryptographic suite: `sr25519-jcs-2023`, `eddsa-jcs-2022` and `ES256K-jcs-2023`.
+If the extension or dApp receives a proof with an unsupported cryptographic suite, they MUST respond with a [rejection message](#rejections) with name `unknown-cryptographic-suite`.
+The extension SHOULD store the signed `SubmitTerms` object in case it is needed for later dispute resolution.
 
 DApp and extension MAY start verification workflows before this event.
 The extension MAY start verification workflows after this event.
@@ -385,145 +531,106 @@ interface SubmitTerms {
      *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICType.html */
     cTypes: ICType[]
 
-    claim: {
-        /** Hash of the CType */
-        cTypeHash: string
+    claim: ProposedCredential
 
-        /** contents of the proposed credential */
-        contents: object
-
-        /** optional DID URI the credential will be issued for */
-        owner?: string
-    }
-
-    /** optional attester-signed binding
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.IQuoteAttesterSigned.html */
-    quote?: IQuoteAttesterSigned
-
-    /** optional ID of the DelegationNode of the attester */
-    delegationId?: string
-
-    /** optional array of credentials of the attester
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
-    legitimations?: ICredential[]
+    quote?: Quote
+    proof: VCDataIntegrity
 }
 ```
 
 
-#### 2. Extension requests credential
+#### 2.a Optional: Extension requests credential
 
 The extension MUST only send the request with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
-The previous message in the flow - `'submit-terms'` - contains the `claim` with an optional `owner` field containing a DID URI.
-This `owner` value being provided means that the attester is willing to issue the credential for this specific DID.
-Note that legacy attesters provide bogus DIDs in this field, this is likely the case if the extension does not control this DID.
-If so, the extension SHOULD proceed as if `owner` was not provided.
+The previous message in the flow - `'submit-terms'` - contains an `SubmitTerms` object which has an optional property `/claim/credentialSubject/id`.
+This value being provided means that the issuer is willing to issue the credential for this specific DID.
+If the `'submit-terms'` message included an unknown DID the extension SHOULD respond with the rejection message described in "2.b Extension rejects credential".
+If the property was undefined, the extension MUST ask the user to choose the DID for which the credential will be issued.
+Otherwise, the extension SHOULD NOT offer the choice, but still MUST get the user’s consent to use this DID.
 
-If the `'submit-terms'` message included an unknown DID or none at all as `owner`, the extension MUST ask the user
-to choose the DID for which the credential will be issued. Otherwise, the extension SHOULD NOT offer the choice,
-but still MUST get the user’s consent to use this DID.
+The extension MUST generate the `salt` values according to the [KiltAttestationProofV1 specification](https://github.com/KILTprotocol/spec-KiltCredentialV1/blob/main/ProofTypes/KiltAttestationProofV1.md#salt) and provide them in the `request-attestation` message.
+The extension MUST provide the `delegationId` if the issuer provided one in the previous step.
 
-The chosen or confirmed DID URI will be submitted as the `owner` field of the `claim` in the `'request-attestation'` message.
-The attester MUST only issue a credential to this DID.
-The attester MAY reject the request if this DID is different from the `owner` in the previous `'submit-terms'` message.
+The extension used a temporary DID for the communication channel.
+Since this DID is only used for a single interaction, it is not possible for the issuer to verify the identity of the claimer until this step.
+In order for the issuer to hold a proof that the claimer agreed to the terms, the claimer MUST sign the `RequestAttestation` object using the DID specified in the credential subject (field `claim.credentialSubject.id`).
+The issuer SHOULD store the signed `RequestAttestation` object in case it is needed for later dispute resolution.
 
-If the `quote` was provided, and the user has entered the password to decrypt the private key for signing the request,
-the extension SHOULD temporarily cache either the password or the unencrypted private key,
-so that the user does not need to enter it again when the payment needs to be transferred.
 
-|||
-|-|-|
-| direction | `extension -> dApp` |
+The chosen or confirmed DID URI will be submitted as the `/claim/credentialSubject/id` property in the `'request-attestation'` message.
+The issuer MUST only issue a credential to this DID.
+The issuer MUST use the provided `salt` values for the proof of the credential.
+The issuer MAY reject the request if this DID is different from the `subject` in the previous `'submit-terms'` message.
+
+
+|              |                         |
+| ------------ | ----------------------- |
+| direction    | `extension -> dApp`     |
 | message_type | `'request-attestation'` |
 
 ```typescript
 interface RequestAttestation {
-    credential: {
-        claim: {
-            /** Hash of the CType */
-            cTypeHash: string
-
-            /** contents of the proposed credential */
-            contents: object
-
-            /** DID URI to issue the credential for */
-            owner: string
-        }
-
-        /** mapping of hashes to nonces */
-        claimNonceMap: Record<string, string>
-
-        /** list of hashes */
-        claimHashes: string[]
-
-        /** optional ID of the DelegationNode of the attester to be used in the attestation */
-        delegationId?: string
-
-        /** optional array of credentials of the attester to include in the attestation
-        *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
-        legitimations: ICredential[]
-
-        /** root hash of the data above */
-        rootHash: string
-    },
-    /** quote agreement signed by the claimer */
-    quote?: IQuoteAgreement
+    claim: AgreedCredential
+    quote?: Quote
+    proof: VCDataIntegrity
 }
 ```
 
 The dApp MAY start verification workflows after this event.
 
-However, the attester MUST perform checks that the complete data necessary for actual attestation is in place
+However, the issuer MUST perform checks that the complete data necessary for actual attestation is in place
 and properly formatted before sending the `'request-payment'` message or requesting the user to pay via other means.
-If any of the checks have failed, the attester MUST NOT request the payment via any means.
+If any of the checks have failed, the issuer MUST NOT request the payment via any means.
 
+#### 2.b Extension rejects credential
 
-#### 3. Optional: Attester requests payment
+The user might not agree to the terms that the issuer proposed.
+If the user rejects the terms, the extension MUST send a [rejection message](#rejections), referencing the `submit-terms` message in the `in-reply-to` field of the message object.
+The rejection message MUST have the name `rejected-terms`.
+
+#### 3. Optional: Issuer requests payment
 
 This specification does not prescribe the means of payment.
 
-The attester MUST NOT send this message if it does not require payment to issue this credential.
-The attester MUST NOT send this message if the payment happens via the attester website.
+The issuer MUST NOT send this message if it does not require payment to issue this credential.
+The issuer MUST NOT send this message if the payment happens via the issuer website.
 
-This attester MAY send this message if it wants the user to transfer payment in KILT Coins by themselves
+This issuer MAY send this message if it wants the user to transfer payment in KILT Coins by themselves
 without interrupting the flow.
 
 The extension MAY start verification workflows after this event.
 
 Upon receiving the `'request-payment'` message the extension SHOULD show the user the interface
-to authorize the transfer of the payment to the attester.
+to authorize the transfer of the payment to the issuer.
 The previously provided `quote` contains the amount to be paid (`cost.gross`)
-and the recipient address (`attesterAddress`).
+and the recipient address (`issuerAddress`).
 
-|||
-|-|-|
-| direction | `dApp -> extension` |
+|              |                     |
+| ------------ | ------------------- |
+| direction    | `dApp -> extension` |
 | message_type | `'request-payment'` |
 
 ```typescript
-interface RequestForPayment {
-    /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: string
-}
+/** This message is empty. It should be associated to the terms and quote using the `in-reply-to` field.
+ */
+type RequestForPayment = null
 ```
 
 
-#### 4. Optional: Extension confirms payment
+#### 4.a Optional: Extension confirms payment
 
 After the user has authorized the payment and it has been transferred, the extension MUST confirm the transfer
-to the attester by sending the `'confirm-payment'` message.
+to the issuer by sending the `'confirm-payment'` message.
 
-|||
-|-|-|
-| direction | `extension -> dApp` |
+|              |                     |
+| ------------ | ------------------- |
+| direction    | `extension -> dApp` |
 | message_type | `'confirm-payment'` |
 
 ```typescript
 interface PaymentConfirmation {
-    /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: string
-
     /** hash of the payment transaction */
     txHash: string
 
@@ -532,53 +639,36 @@ interface PaymentConfirmation {
 }
 ```
 
+#### 4.b Optional: Extension rejects payment
 
-#### 5. Attester submits credential
+The extension MUST send a [rejection message](#rejections) if the user cancels or rejects the payment.
+The rejection message MUST have the name `rejected-payment`.
 
-|||
-|-|-|
-| direction | `dApp -> extension` |
-| message_type | `'submit-attestation'` |
+#### 5.a Issuer submits credential
+
+If the issuer successfully verified the claim, they MUST issue an attestation and SHOULD send a `submit-credential` message.
+This message contains the attested credential.
+
+|              |                       |
+| ------------ | --------------------- |
+| direction    | `dApp -> extension`   |
+| message_type | `'submit-credential'` |
 
 ```typescript
-interface Attestation {
-    /** same as the `rootHash` value of the `'request-attestation'` message */
-    claimHash: string
-
-    /** Hash of the CType*/
-    cTypeHash: string
-
-    /** DID URI the credential was issued for */
-    owner: string
-
-    /** optional ID of the DelegationNode of the attester */
-    delegationId?: string
-
-    /** it is expected that the freshly issued credential is not yet revoked */
-    revoked: false
-}
+/** The content of the message is the attested credential.
+ * @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.KiltCredentialV1.html */
+type SubmitCredential = KiltCredentialV1
 ```
 
+#### 5.b Issuer rejects credential
 
-#### 6. Attester rejects attestation
-
-In case the attester does not approve the attestation request, no information about this appears on the blockchain.
-The extension can only get this information directly from the attester.
+In case the issuer does not approve the attestation request, no information about this appears on the blockchain.
+The extension can only get this information directly from the issuer.
 A rejection message could be useful to help the user to remove the corresponding credential from the extension.
 
-Once the decision not to approve the attestation request has been made, the attester SHOULD send this message.
-If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it
-as rejected and SHOULD offer the user the option to remove it.
-
-|||
-|-|-|
-| direction | `dApp -> extension`    |
-| message_type | `'reject-attestation'` |
-
-```typescript
-/** The contents of the message is simply the `rootHash` of the credential */
-interface AttestationRejection extends string {}
-```
+Once the decision not to approve the attestation request has been made, the issuer SHOULD send a [rejection message](#rejections).
+The rejection message MUST have the name `rejected-issuance`.
+If the corresponding credential is stored in the extension, on receiving this message the extension MUST mark it as rejected and SHOULD offer the user the option to remove it.
 
 
 ### Verification Workflow
@@ -590,28 +680,25 @@ I need an additional credential from you".
 
 Repeat for multiple required credentials.
 
-
 #### 1. DApp or extension requests credential
 
-|||
-|-|-|
-| direction | `dApp <-> extension` |
+|              |                        |
+| ------------ | ---------------------- |
+| direction    | `dApp <-> extension`   |
 | message_type | `'request-credential'` |
 
-Multiple CTypes MAY be requested here only if they can be used interchangeably. For example, if the verifier needs
-credentials for email address and phone number, they need to run one workflow requesting a credential
+Multiple CTypes MAY be requested here only if they can be used interchangeably.
+For example, if the verifier needs credentials for email address and phone number, they need to run one workflow requesting a credential
 for email address (with one or more email address CTypes), and afterwards another requesting a credential for phone number
 (with one or more phone number CTypes).
 
-The sender MAY request a credential issued for a particular DID by providing it in the optional message field `owner`.
-If the extension received a message with this field, it SHOULD ask the user to choose only from the credentials issued for
-this DID. Note that extensions supporting a previous version of the API might ignore this field. If the `owner` field
- is absent, all possible credentials can be used.
+The sender MAY request a credential issued for a particular DID by providing it in the optional message field `subject`.
+If the extension received a message with this field, it MUST ask the user to choose only from the credentials issued for
+this DID.
+If the `subject` field is absent, all possible credentials can be used.
 
 The `challenge` MUST be used only once.
 The dApp MUST store a copy of the `challenge` on the server-side to prevent tampering.
-
-DApp and extension MAY start verification workflows after this event.
 
 ```typescript
 interface RequestCredential {
@@ -620,89 +707,49 @@ interface RequestCredential {
             /** The hash of the CType */
             cTypeHash: string
 
-            /** optional list of DIDs of attesters trusted by this verifier */
-            trustedAttesters?: string[]
+            /** optional list of DIDs of issuers trusted by this verifier */
+            trustedIssuers?: string[]
 
-            /** list of credential attributes which MUST be included when submitting the credential */
+            /**
+             * list of credential attributes which MUST be included when submitting the credential.
+             * The properties are identified using JSON Pointers:
+             * https://datatracker.ietf.org/doc/html/rfc6901
+             */
             requiredProperties: string[]
         }
     ]
 
     /** Optional DID URI the credential should be issued to */
-    owner?: string
+    subject?: string
 
     /** 24 random bytes as hexadecimal */
     challenge: string
 }
-
-const exampleRequest: RequestCredential = {
-    "cTypes": [
-        {
-            "cTypeHash": "0x5366521b1cf4497cfe5f17663a7387a87bb8f2c4295d7c40f3140e7ee6afc41b",
-            "trustedAttesters": [
-                "did:kilt:5CqJa4Ct7oMeMESzehTiN9fwYdGLd7tqeirRMpGDh2XxYYyx"
-            ],
-            "requiredProperties": [
-                "name"
-            ]
-        }
-    ],
-    "challenge": "9f1ceac971cce4c61505974f411a9db432949531abe10dde"
-}
 ```
+
+##### Required Properties
+
+The `cTypes.requiredProperties` property specifies which fields of the credential MUST be included in the presentation.
+All fields which are not covered by the selective disclosure scheme are mandatory and MUST not be listed in the `requiredProperties`.
+
 
 #### 2. Extension or dApp sends credential
 
 The extension MUST only send the credential with active consent of the user.
 This is the first step where the user’s DID is revealed to the dApp.
 
-The `challenge` from the previous message MUST be used to update the `claimerSignature`
-with the private key of the identity which owns the credential.
-This prevents replay attacks by confirming the ownership of this identity.
+The `challenge` from the previous message MUST be used to create the [verifiable presentation](https://www.w3.org/TR/vc-data-model/#presentations-0) with the private key of the identity which owns the credential.
+The challenge is added to the data integrity proof which prevents replay attacks by confirming the ownership of this identity.
 
-The dApp MUST verify in the backend that the `claimerSignature` returned by the extension
-matches its identity and the `challenge`.
-
-|||
-|-|-|
-| direction | `extension <-> dApp` |
+|              |                       |
+| ------------ | --------------------- |
+| direction    | `extension <-> dApp`  |
 | message_type | `'submit-credential'` |
 
 ```typescript
-/** Array of credentials themselves with the `claimerSignature`
- *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredentialPresentation.html  */
-interface SubmitCredential extends Array<{
-    claim: {
-        /** Hash of the CType */
-        cTypeHash: string
-
-        /** contents of the proposed credential */
-        contents: object
-
-        /** DID URI to issue the credential for */
-        owner: string
-    }
-
-    /** mapping of hashes to nonces */
-    claimNonceMap: Record<string, string>
-
-    /** list of hashes */
-    claimHashes: string[]
-
-    /** optional ID of the DelegationNode of the attester to be used in the attestation */
-    delegationId?: string
-
-    /** optional array of credentials of the attester to include in the attestation
-     *  @link https://kiltprotocol.github.io/sdk-js/interfaces/types_src.ICredential.html */
-    legitimations: ICredential[]
-
-    /** signature of the data above using the user’s DID
-     *  @link https://kiltprotocol.github.io/sdk-js/types/types_src.DidSignature.html */
-    claimerSignature: DidSignature & { challenge?: string }
-
-    /** root hash of the data above */
-    rootHash: string
-}> {}
+/** A verifiable presentation.
+ *  @link https://kiltprotocol.github.io/sdk-js/interfaces/core_src.Types.VerifiablePresentation.html */
+type SubmitCredential = VerifiablePresentation
 ```
 
 
@@ -736,7 +783,7 @@ In the real world, trust relies on societal mechanisms and is usually distribute
 An example from the internet is the Extended Validation SSL certificates signed by Certification Authorities
 from a hard-coded list. This approach does not translate directly into the decentralized blockchain ecosystem.
 
-Every verifier can list their trusted attesters, thus delegating them trust. One downside to this solution is that the list
+Every verifier can list their trusted issuers, thus delegating them trust. One downside to this solution is that the list
 will likely be quite long, and making the user choose from it would result in a poor user experience. A more serious issue
 with this approach is that the verifier itself might be a part of a malicious network and thus cannot be trusted.
 
